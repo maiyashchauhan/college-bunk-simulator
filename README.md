@@ -12,7 +12,7 @@ A high-octane 2D campus stealth maze runner featuring **5 distinct floors**, **9
 - **🎨 Dynamic Cyber-Faculty Badges**: Integrated across all 9 departments for HODs, teachers, Security, Bouncers, and the Principal (with optional custom local photo support).
 - **🏫 9 Academic Departments & 8 Semesters**:
   - `ASH`, `CSE`, `CSIT`, `CSE(AI & ML)`, `CSE(IOT & CS)`, `ECE`, `ECS`, `ME`, `RA`
-  - **Semesters 1 & 2 Rule**: 1st-year disciplinary dragnet supervised by HOD Pooja Sharma, Security, and Bouncer.
+  - **Semesters 1 & 2 Rule**: 1st-year disciplinary dragnet supervised by HOD, Security, and Bouncer.
   - **Semesters 3–8 Rule**: Branch-specific faculty and HODs actively patrol corridors.
 - **👑 Principal (Final Boss)**: Stationed at the Main Gate in Level 5 across all departments and semesters.
 - **🏃 Thickened Turns & Corner Auto-Assist**:
