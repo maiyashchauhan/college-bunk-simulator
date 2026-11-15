@@ -1,6 +1,6 @@
 """
-🎓 COLLEGE BUNK SIMULATOR - STREAMLIT EDITION
-High-Octane Campus Stealth Maze Runner with Real Faculty Photos & Smooth Navigation!
+🎓 COLLEGE BUNK SIMULATOR - MOBILE & FULLSCREEN WEB APP
+Pure 60 FPS Landscape Fullscreen Experience with Corner Assist & In-Game Controls
 """
 
 import streamlit as st
@@ -8,94 +8,56 @@ import streamlit.components.v1 as components
 import os
 import json
 import base64
-import subprocess
-import sys
 
 # ==============================================================================
-# 🎨 STREAMLIT PAGE SETUP & CUSTOM THEMING
+# 🎨 STREAMLIT PAGE SETUP - 100% CLEAN FULLSCREEN (NO CLUTTER / BANNERS)
 # ==============================================================================
 
 st.set_page_config(
     page_title="College Bunk Simulator",
     page_icon="🎓",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
-# Custom Cyber-Campus CSS
+# Completely remove Streamlit UI padding, margins, headers, and footers for pure full screen
 st.markdown("""
 <style>
-    /* Dark cyber theme */
-    .stApp {
-        background-color: #0b0f19;
-        color: #e2e8f0;
+    /* Hide Streamlit header, footer, decoration, and toolbars */
+    #MainMenu, header, footer, .stDeployButton, [data-testid="stToolbar"], [data-testid="stDecoration"], [data-testid="stStatusWidget"] {
+        display: none !important;
+        visibility: hidden !important;
     }
     
-    /* Main banner styling */
-    .hero-banner {
-        background: linear-gradient(135deg, rgba(16, 26, 48, 0.95), rgba(24, 42, 77, 0.95));
-        border: 2px solid #00e5ff;
-        border-radius: 14px;
-        padding: 18px 24px;
-        margin-bottom: 20px;
-        box-shadow: 0 0 25px rgba(0, 229, 255, 0.25);
-        text-align: center;
+    /* Zero padding and fixed full viewport */
+    html, body, .stApp {
+        background-color: #070b12 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        width: 100vw !important;
+        height: 100vh !important;
     }
     
-    .hero-title {
-        font-size: 2.2rem;
-        font-weight: 800;
-        color: #ffd700;
-        letter-spacing: 2px;
-        margin-bottom: 6px;
-        text-shadow: 0 0 12px rgba(255, 215, 0, 0.5);
+    .block-container {
+        padding: 0 !important;
+        margin: 0 !important;
+        max-width: 100vw !important;
+        height: 100vh !important;
+        overflow: hidden !important;
     }
     
-    .hero-sub {
-        font-size: 1.05rem;
-        color: #00e5ff;
-        font-weight: 500;
-    }
-    
-    .badge-pill {
-        display: inline-block;
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 0.85rem;
-        font-weight: 600;
-        margin: 2px 4px;
-        background: rgba(0, 229, 255, 0.15);
-        border: 1px solid #00e5ff;
-        color: #ffffff;
-    }
-    
-    .badge-gold {
-        background: rgba(255, 215, 0, 0.15);
-        border: 1px solid #ffd700;
-        color: #ffd700;
-    }
-
-    .badge-green {
-        background: rgba(46, 213, 115, 0.15);
-        border: 1px solid #2ed573;
-        color: #2ed573;
-    }
-
-    /* Faculty card in sidebar */
-    .faculty-card {
-        background: rgba(18, 24, 38, 0.9);
-        border: 1px solid #2a3b5c;
-        border-radius: 10px;
-        padding: 10px;
-        margin-bottom: 8px;
-        text-align: center;
-    }
-
-    /* Streamlit components container */
+    /* Full viewport iframe container */
     iframe {
-        border-radius: 12px;
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
-        border: 1px solid rgba(0, 229, 255, 0.3) !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        border: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        z-index: 9999 !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -186,13 +148,8 @@ PHOTO_MAP = {
     'yudhveer kumar verma': 'yudhveer kumar verma.jpeg'
 }
 
-# ==============================================================================
-# 📸 PHOTO LOADING & BASE64 ENCODING
-# ==============================================================================
-
-@st.cache_data
-def get_photo_data_uris():
-    """Load all jpeg photos in current directory as base64 data URIs."""
+# Optional local photo loader
+def get_local_photos_base64():
     photos = {}
     for f in os.listdir('.'):
         if f.lower().endswith(('.jpeg', '.jpg', '.png')):
@@ -204,21 +161,7 @@ def get_photo_data_uris():
                 pass
     return photos
 
-ALL_PHOTOS = get_photo_data_uris()
-
-def get_photo_uri_for_name(name):
-    norm = name.lower()
-    for clean in ['(hod)', '(principal)', 'principal', 'hod']:
-        norm = norm.replace(clean, '')
-    norm = norm.strip()
-    target_file = PHOTO_MAP.get(norm)
-    if target_file and target_file in ALL_PHOTOS:
-        return ALL_PHOTOS[target_file]
-    # Fallback search
-    for k in ALL_PHOTOS:
-        if norm in k:
-            return ALL_PHOTOS[k]
-    return None
+ALL_PHOTOS = get_local_photos_base64()
 
 # ==============================================================================
 # 🗺️ 5 HAND-CRAFTED VERIFIED MAZE LEVELS (Exact same data as yash.py)
@@ -406,98 +349,12 @@ LEVEL_DATA = [
     }
 ]
 
-# ==============================================================================
-# 🎮 SIDEBAR: REGISTRATION & FACULTY PREVIEW
-# ==============================================================================
-
-with st.sidebar:
-    st.markdown("### 🎓 Student Profile")
-    student_name = st.text_input("Student Name", value="", placeholder="Enter Student Name...", help="Starts empty. Falls back to 'Student' if left blank.")
-    student_roll = st.text_input("Roll Number", value="", placeholder="Enter Roll Number...", help="Starts empty. Falls back to 'Roll 01' if left blank.")
-
-    st.markdown("---")
-    st.markdown("### 🏫 Branch & Semester")
-    student_dept = st.selectbox("Department", DEPARTMENTS, index=1)
-    student_sem = st.selectbox("Semester", SEMESTERS, index=3)
-
-    st.markdown("---")
-    st.markdown("### 🎯 Active Hunters Deployment")
-
-    # Determine Active Hunters for selected Branch & Sem
-    if student_sem in (1, 2):
-        active_hunters = ["Pooja Sharma (HOD)", "BOUNCER", "SECURITY", PRINCIPAL_NAME]
-        st.info("📌 **Sem 1 & 2 Rule:** First-year disciplinary dragnet led by HOD Pooja Sharma, Security & Bouncers!")
-    else:
-        d_info = DEPARTMENT_FACULTY[student_dept]
-        active_hunters = [d_info["hod"]] + d_info["teachers"] + ["BOUNCER", "SECURITY", PRINCIPAL_NAME]
-        st.success(f"📌 **Sem {student_sem} Rule:** Specialized {student_dept} departmental faculty deployed!")
-
-    # Display faculty cards with photos
-    for h in active_hunters:
-        photo_uri = get_photo_uri_for_name(h)
-        col_img, col_txt = st.columns([1, 2])
-        with col_img:
-            if photo_uri:
-                st.markdown(f'<img src="{photo_uri}" style="width: 44px; height: 44px; border-radius: 50%; border: 2px solid #00e5ff; object-fit: cover;">', unsafe_allow_html=True)
-            else:
-                st.markdown(f'<div style="width: 44px; height: 44px; border-radius: 50%; background: #1a2a44; border: 2px solid #ffd700; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #ffd700;">{h[:2].upper()}</div>', unsafe_allow_html=True)
-        with col_txt:
-            if "Principal" in h:
-                r_tag = '<span style="color: #ffd700; font-size: 0.75rem; font-weight: bold;">PRINCIPAL</span>'
-            elif "HOD" in h:
-                r_tag = '<span style="color: #ff4757; font-size: 0.75rem; font-weight: bold;">HOD</span>'
-            elif h in ("BOUNCER", "SECURITY"):
-                r_tag = '<span style="color: #ffa502; font-size: 0.75rem; font-weight: bold;">CAMPUS GUARD</span>'
-            else:
-                r_tag = '<span style="color: #2ed573; font-size: 0.75rem; font-weight: bold;">FACULTY</span>'
-            st.markdown(f"**{h}**<br>{r_tag}", unsafe_allow_html=True)
-
-    st.markdown("---")
-    st.markdown("### 🕹️ Controls Guide")
-    st.markdown("""
-    - **PC Navigation**: `[W A S D]` or `[Arrow Keys]`
-    - **Speed Sprint**: `[Hold SHIFT]` (requires coffee/drink boost)
-    - **Pause / Resume**: `[P]` or `[ESC]`
-    - **Mute Audio**: `[M]`
-    - **Mobile**: Use on-screen virtual touch controls below the screen!
-    """)
-
-    st.markdown("---")
-    if st.button("🖥️ Launch Native Pygame (Local PC)", use_container_width=True):
-        try:
-            subprocess.Popen([sys.executable, "yash.py"])
-            st.toast("Launched Pygame desktop window on your local machine!")
-        except Exception as err:
-            st.error(f"Could not launch native window: {err}")
-
-# ==============================================================================
-# 🎮 MAIN VIEW: BANNER & WEB GAME ENGINE
-# ==============================================================================
-
-# Header Banner
-final_student_name = student_name.strip() if student_name.strip() else "Student"
-final_student_roll = student_roll.strip() if student_roll.strip() else "Roll 01"
-
-st.markdown(f"""
-<div class="hero-banner">
-    <div class="hero-title">🏃 COLLEGE BUNK SIMULATOR 🏫</div>
-    <div class="hero-sub">The Ultimate Campus Stealth & Speed Escape Run</div>
-    <div style="margin-top: 10px;">
-        <span class="badge-pill">🎓 {final_student_name}</span>
-        <span class="badge-pill">🆔 {final_student_roll}</span>
-        <span class="badge-pill badge-gold">🏫 {student_dept}</span>
-        <span class="badge-pill badge-green">📅 Semester {student_sem}</span>
-        <span class="badge-pill">⚡ 5 Dynamic Mazes</span>
-    </div>
-</div>
-""", unsafe_allow_html=True)
-
-# Build JSON configuration for the embedded Web Engine
+# Build JSON configuration for client-side JavaScript engine
 game_config = {
-    "student_name": final_student_name,
-    "student_roll": final_student_roll,
-    "student_dept": student_dept,
-    "student_sem": student_sem,
+    "student_name": "Student",
+    "student_roll": "Roll 01",
+    "student_dept": "CSE",
+    "student_sem": 4,
     "departments": DEPARTMENTS,
     "semesters": SEMESTERS,
     "levels": LEVEL_DATA,
@@ -510,14 +367,16 @@ game_config = {
 game_config_json = json.dumps(game_config)
 
 # ==============================================================================
-# 🕹️ HTML5 + JAVASCRIPT GAME ENGINE TEMPLATE
+# 🕹️ HTML5 + JAVASCRIPT FULLSCREEN LANDSCAPE ENGINE
 # ==============================================================================
 
 game_html = f"""
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>College Bunk Simulator</title>
 <style>
     * {{
         box-sizing: border-box;
@@ -525,135 +384,348 @@ game_html = f"""
         padding: 0;
         user-select: none;
         -webkit-user-select: none;
+        touch-action: none;
     }}
-    body {{
-        background: #090d16;
-        color: #fff;
+    html, body {{
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+        background: #060911;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        color: #fff;
+    }}
+    #game-container {{
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #060911;
+    }}
+    canvas {{
+        display: block;
+        max-width: 100vw;
+        max-height: 100vh;
+        aspect-ratio: 900 / 630;
+        object-fit: contain;
+        background: #090e1a;
+        box-shadow: 0 0 35px rgba(0, 229, 255, 0.2);
+    }}
+
+    /* =========================================================================
+       👑 UPPER RIGHT CORNER CONTROLS (Pause & Settings)
+       ========================================================================= */
+    #corner-controls {{
+        position: absolute;
+        top: 10px;
+        right: 14px;
+        z-index: 500;
+        display: flex;
+        gap: 8px;
+    }}
+    .corner-btn {{
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: rgba(15, 23, 42, 0.85);
+        border: 2px solid #00e5ff;
+        color: #00e5ff;
+        font-size: 1.15rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        backdrop-filter: blur(8px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        transition: transform 0.1s, background 0.1s;
+    }}
+    .corner-btn:active {{
+        transform: scale(0.9);
+        background: #00e5ff;
+        color: #070b12;
+    }}
+
+    /* =========================================================================
+       ⚙️ SETTINGS MODAL (Sound & Restart Level in One Option)
+       ========================================================================= */
+    #settings-modal {{
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(6, 9, 17, 0.88);
+        backdrop-filter: blur(10px);
+        z-index: 1000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+    }}
+    .settings-card {{
+        width: 90%;
+        max-width: 440px;
+        background: #0f172a;
+        border: 2px solid #00e5ff;
+        border-radius: 16px;
+        padding: 24px 20px;
+        box-shadow: 0 0 40px rgba(0, 229, 255, 0.4);
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        text-align: center;
+    }}
+    .settings-title {{
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #ffd700;
+        letter-spacing: 1.5px;
+    }}
+    .settings-btn {{
+        padding: 14px 16px;
+        border-radius: 10px;
+        font-size: 1.05rem;
+        font-weight: bold;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        transition: all 0.15s;
+    }}
+    .btn-sound {{
+        background: #1e293b;
+        border: 2px solid #2ed573;
+        color: #2ed573;
+    }}
+    .btn-sound.muted {{
+        border-color: #ff4757;
+        color: #ff4757;
+    }}
+    .btn-restart {{
+        background: #1e293b;
+        border: 2px solid #ffd700;
+        color: #ffd700;
+    }}
+    .btn-fs {{
+        background: #1e293b;
+        border: 2px solid #00e5ff;
+        color: #00e5ff;
+    }}
+    .btn-close {{
+        background: linear-gradient(135deg, #00e5ff, #0077b6);
+        border: none;
+        color: #060911;
+        font-weight: 900;
+        margin-top: 4px;
+    }}
+    .settings-btn:active {{
+        transform: scale(0.96);
+    }}
+
+    /* =========================================================================
+       📱 HORIZONTAL ROTATE SCREEN PROMPT (Phone Level)
+       ========================================================================= */
+    #rotate-overlay {{
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(6, 9, 17, 0.96);
+        z-index: 2000;
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 20px;
+    }}
+    .rotate-phone-anim {{
+        font-size: 3.5rem;
+        margin-bottom: 16px;
+        animation: rotateIcon 2s infinite ease-in-out;
+    }}
+    @keyframes rotateIcon {{
+        0%, 20% {{ transform: rotate(0deg); }}
+        50%, 80% {{ transform: rotate(-90deg); }}
+        100% {{ transform: rotate(0deg); }}
+    }}
+    .rotate-title {{
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: #00e5ff;
+        margin-bottom: 8px;
+    }}
+    .rotate-desc {{
+        font-size: 0.95rem;
+        color: #94a3b8;
+        max-width: 320px;
+        margin-bottom: 20px;
+    }}
+    .btn-dismiss-rotate {{
+        background: #1e293b;
+        border: 1px solid #00e5ff;
+        color: #00e5ff;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: bold;
+        cursor: pointer;
+    }}
+
+    /* Show rotate alert only in mobile portrait */
+    @media (orientation: portrait) and (max-width: 768px) {{
+        #rotate-overlay.active {{
+            display: flex !important;
+        }}
+    }}
+
+    /* =========================================================================
+       🎮 FLOATING ERGONOMIC MOBILE TOUCH CONTROLS (Horizontal Landscape)
+       ========================================================================= */
+    #mobile-controls {{
+        position: absolute;
+        bottom: 12px;
+        left: 0;
+        width: 100vw;
+        height: 140px;
+        pointer-events: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        padding: 0 18px;
+        z-index: 300;
+    }}
+    .touch-dpad {{
+        pointer-events: auto;
+        display: grid;
+        grid-template-columns: repeat(3, 46px);
+        grid-template-rows: repeat(3, 44px);
+        gap: 3px;
+        background: rgba(15, 23, 42, 0.55);
+        border: 1px solid rgba(0, 229, 255, 0.35);
+        border-radius: 12px;
+        padding: 4px;
+        backdrop-filter: blur(6px);
+    }}
+    .dpad-key {{
+        background: rgba(30, 41, 59, 0.85);
+        border: 1px solid rgba(0, 229, 255, 0.4);
+        border-radius: 8px;
+        color: #00e5ff;
+        font-size: 1.1rem;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }}
+    .dpad-key:active {{
+        background: #00e5ff;
+        color: #060911;
+        transform: scale(0.92);
+    }}
+    .sprint-touch-container {{
+        pointer-events: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+    }}
+    .touch-sprint-btn {{
+        width: 82px;
+        height: 82px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, rgba(255, 71, 87, 0.85), rgba(255, 107, 129, 0.85));
+        border: 3px solid #ff4757;
+        color: white;
+        font-size: 0.95rem;
+        font-weight: 900;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        overflow-x: hidden;
-        padding: 8px 4px;
-    }}
-    #game-container {{
-        position: relative;
-        width: 100%;
-        max-width: 900px;
-        background: #0b1120;
-        border-radius: 12px;
-        box-shadow: 0 0 30px rgba(0, 229, 255, 0.35);
-        border: 2px solid #00e5ff;
-        overflow: hidden;
-    }}
-    canvas {{
-        display: block;
-        width: 100%;
-        height: auto;
-        background: #0e1424;
-    }}
-    /* Mobile Controls Bar */
-    #touch-controls {{
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: space-between;
-        width: 100%;
-        max-width: 900px;
-        background: rgba(14, 20, 36, 0.95);
-        border: 1px solid #1e293b;
-        border-radius: 10px;
-        padding: 10px 16px;
-        margin-top: 10px;
-        gap: 10px;
-    }}
-    .dpad-grid {{
-        display: grid;
-        grid-template-columns: repeat(3, 48px);
-        grid-template-rows: repeat(3, 44px);
-        gap: 4px;
-        justify-content: center;
-    }}
-    .touch-btn {{
-        background: #1e293b;
-        border: 1px solid #00e5ff;
-        border-radius: 8px;
-        color: #00e5ff;
-        font-size: 1.2rem;
-        font-weight: bold;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        box-shadow: 0 4px 20px rgba(255, 71, 87, 0.4);
         cursor: pointer;
-        touch-action: manipulation;
-        transition: all 0.1s;
+        backdrop-filter: blur(6px);
     }}
-    .touch-btn:active {{
-        background: #00e5ff;
-        color: #090d16;
-        transform: scale(0.94);
-    }}
-    .btn-action {{
-        background: linear-gradient(135deg, #ff4757, #ff6b81);
-        border: none;
-        color: white;
-        padding: 12px 24px;
-        font-size: 1rem;
-        font-weight: bold;
-        border-radius: 8px;
-        cursor: pointer;
-        box-shadow: 0 4px 15px rgba(255, 71, 87, 0.4);
-    }}
-    .btn-action:active {{
-        transform: scale(0.95);
-    }}
-    .btn-util {{
-        background: #152238;
-        border: 1px solid #4a69bd;
-        color: #82ccdd;
-        padding: 8px 14px;
-        border-radius: 6px;
-        font-size: 0.85rem;
-        cursor: pointer;
+    .touch-sprint-btn:active {{
+        transform: scale(0.9);
+        background: #ff4757;
     }}
 </style>
 </head>
 <body>
 
 <div id="game-container">
+    <!-- Main Fullscreen Game Canvas -->
     <canvas id="gameCanvas" width="900" height="630"></canvas>
+
+    <!-- Upper Right Corner Controls -->
+    <div id="corner-controls">
+        <button class="corner-btn" id="btn-pause" title="Pause / Resume">⏸️</button>
+        <button class="corner-btn" id="btn-settings" title="Settings (Sound, Restart)">⚙️</button>
+    </div>
+
+    <!-- Ergonomic On-Screen Touch Controls (Mobile Horizontal) -->
+    <div id="mobile-controls">
+        <!-- Left Thumb: D-Pad -->
+        <div class="touch-dpad">
+            <div></div>
+            <div class="dpad-key" id="k-up">▲</div>
+            <div></div>
+            <div class="dpad-key" id="k-left">◀</div>
+            <div class="dpad-key" id="k-center" style="font-size: 0.75rem;">●</div>
+            <div class="dpad-key" id="k-right">▶</div>
+            <div></div>
+            <div class="dpad-key" id="k-down">▼</div>
+            <div></div>
+        </div>
+
+        <!-- Right Thumb: Sprint Button -->
+        <div class="sprint-touch-container">
+            <button class="touch-sprint-btn" id="k-sprint">
+                <span>⚡</span>
+                <span style="font-size: 0.75rem; letter-spacing: 0.5px;">SPRINT</span>
+            </button>
+        </div>
+    </div>
 </div>
 
-<!-- Mobile & Responsive Touch Controls -->
-<div id="touch-controls">
-    <div class="dpad-grid">
-        <div></div>
-        <button class="touch-btn" id="btn-up">▲</button>
-        <div></div>
-        <button class="touch-btn" id="btn-left">◀</button>
-        <button class="touch-btn" id="btn-center" style="font-size: 0.8rem;">●</button>
-        <button class="touch-btn" id="btn-right">▶</button>
-        <div></div>
-        <button class="touch-btn" id="btn-down">▼</button>
-        <div></div>
+<!-- ⚙️ SETTINGS MODAL: Sound and Restart in One Place -->
+<div id="settings-modal">
+    <div class="settings-card">
+        <div class="settings-title">⚙️ GAME SETTINGS</div>
+        <button class="settings-btn btn-sound" id="modal-sound">
+            <span id="sound-icon">🔊</span>
+            <span id="sound-text">SOUND: ON</span>
+        </button>
+        <button class="settings-btn btn-restart" id="modal-restart">
+            <span>🔄</span>
+            <span>RESTART CURRENT LEVEL</span>
+        </button>
+        <button class="settings-btn btn-fs" id="modal-fullscreen">
+            <span>⛶</span>
+            <span>TOGGLE FULLSCREEN</span>
+        </button>
+        <button class="settings-btn btn-close" id="modal-close">
+            <span>✕ RESUME GAME</span>
+        </button>
     </div>
-    
-    <div style="display: flex; flex-direction: column; gap: 8px; align-items: center;">
-        <button class="btn-action" id="btn-sprint">⚡ SPRINT [SHIFT]</button>
-        <span style="font-size: 0.75rem; color: #94a3b8;">Hold while Coffee/Boost active</span>
-    </div>
+</div>
 
-    <div style="display: flex; flex-direction: column; gap: 6px;">
-        <button class="btn-util" id="btn-sound">🔊 Sound: ON</button>
-        <button class="btn-util" id="btn-pause">⏸️ Pause [P]</button>
-        <button class="btn-util" id="btn-restart">🔄 Restart Level</button>
-    </div>
+<!-- 📱 ROTATE SCREEN OVERLAY (Phone Level) -->
+<div id="rotate-overlay" class="active">
+    <div class="rotate-phone-anim">📱</div>
+    <div class="rotate-title">ROTATE PHONE HORIZONTALLY</div>
+    <div class="rotate-desc">Turn your screen sideways for full-screen landscape arcade gaming!</div>
+    <button class="btn-dismiss-rotate" id="btn-rotate-dismiss">Play in Landscape ➔</button>
 </div>
 
 <script>
 // ==============================================================================
-// 📦 GAME CONFIG & INITIALIZATION
+// 📦 CONFIG & ENGINE INITIALIZATION
 // ==============================================================================
 const CONFIG = {game_config_json};
 
@@ -673,9 +745,8 @@ const COLOR_GOLD = "#ffd700";
 const COLOR_GREEN = "#2ed573";
 const COLOR_RED = "#ff4757";
 const COLOR_WHITE = "#ffffff";
-const COLOR_DARK = "#090d16";
 
-// Audio Synth via Web Audio API
+// Audio Synthesis (Web Audio API)
 let audioCtx = null;
 let soundEnabled = true;
 
@@ -714,13 +785,108 @@ function playWinSound() {{
 }}
 
 // ==============================================================================
-// 🖼️ PRE-RENDERED AVATARS (21 REAL TEACHER PHOTOS + STUDENT BADGE)
+// 📱 SCREEN ROTATION & FULLSCREEN MANAGEMENT
 // ==============================================================================
-const avatarCache = {{}};
-const loadedImages = {{}};
+const rotateOverlay = document.getElementById("rotate-overlay");
+const btnRotateDismiss = document.getElementById("btn-rotate-dismiss");
 
-// Preload base64 images into HTML Image elements
-for (const [key, uri] of Object.entries(CONFIG.photos)) {{
+function checkOrientation() {{
+    const isPortrait = window.innerHeight > window.innerWidth && window.innerWidth <= 768;
+    if (isPortrait) {{
+        rotateOverlay.classList.add("active");
+    }} else {{
+        rotateOverlay.classList.remove("active");
+    }}
+}}
+window.addEventListener("resize", checkOrientation);
+window.addEventListener("orientationchange", checkOrientation);
+checkOrientation();
+
+btnRotateDismiss.addEventListener("click", () => {{
+    initAudio();
+    rotateOverlay.classList.remove("active");
+    requestLandscapeFullscreen();
+}});
+
+function requestLandscapeFullscreen() {{
+    const el = document.documentElement;
+    if (el.requestFullscreen) el.requestFullscreen();
+    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    else if (el.mozRequestFullScreen) el.mozRequestFullScreen();
+    else if (el.msRequestFullscreen) el.msRequestFullscreen();
+
+    if (screen.orientation && screen.orientation.lock) {{
+        screen.orientation.lock("landscape").catch(() => {{}});
+    }}
+}}
+
+// ==============================================================================
+// ⚙️ UPPER RIGHT CORNER & SETTINGS MODAL
+// ==============================================================================
+const btnPause = document.getElementById("btn-pause");
+const btnSettings = document.getElementById("btn-settings");
+const settingsModal = document.getElementById("settings-modal");
+const modalSound = document.getElementById("modal-sound");
+const soundIcon = document.getElementById("sound-icon");
+const soundText = document.getElementById("sound-text");
+const modalRestart = document.getElementById("modal-restart");
+const modalFullscreen = document.getElementById("modal-fullscreen");
+const modalClose = document.getElementById("modal-close");
+
+btnPause.addEventListener("click", () => {{
+    initAudio();
+    if (gameState === "PLAYING") {{
+        gameState = "PAUSED";
+        btnPause.innerText = "▶️";
+    }} else if (gameState === "PAUSED") {{
+        gameState = "PLAYING";
+        btnPause.innerText = "⏸️";
+    }}
+}});
+
+btnSettings.addEventListener("click", () => {{
+    initAudio();
+    if (gameState === "PLAYING") {{
+        gameState = "PAUSED";
+        btnPause.innerText = "▶️";
+    }}
+    settingsModal.style.display = "flex";
+}});
+
+modalSound.addEventListener("click", () => {{
+    soundEnabled = !soundEnabled;
+    if (soundEnabled) {{
+        modalSound.classList.remove("muted");
+        soundIcon.innerText = "🔊";
+        soundText.innerText = "SOUND: ON";
+    }} else {{
+        modalSound.classList.add("muted");
+        soundIcon.innerText = "🔇";
+        soundText.innerText = "SOUND: OFF";
+    }}
+}});
+
+modalRestart.addEventListener("click", () => {{
+    settingsModal.style.display = "none";
+    retryLevel();
+    btnPause.innerText = "⏸️";
+}});
+
+modalFullscreen.addEventListener("click", () => {{
+    requestLandscapeFullscreen();
+}});
+
+modalClose.addEventListener("click", () => {{
+    settingsModal.style.display = "none";
+    gameState = "PLAYING";
+    btnPause.innerText = "⏸️";
+}});
+
+// ==============================================================================
+// 🖼️ AVATAR RENDERING (Dynamic Initials Badges)
+// ==============================================================================
+const loadedImages = {{}};
+for (const [key, uri] of Object.entries(CONFIG.photos || {{}})) {{
     const img = new Image();
     img.src = uri;
     loadedImages[key] = img;
@@ -752,7 +918,7 @@ function createHunterAvatar(name, size=28) {{
 
     const img = getPhotoForName(name);
     let borderCol = COLOR_CYAN;
-    let fallbackBg = "#223355";
+    let fallbackBg = "#1a2a44";
     let inits = "FC";
 
     const norm = name.toLowerCase();
@@ -825,7 +991,6 @@ function createStudentAvatar(name, size=28) {{
         inits = parts[0].toUpperCase();
     }}
 
-    // Layered cyber-navy circle
     octx.beginPath();
     octx.arc(center, center, radius, 0, Math.PI * 2);
     octx.fillStyle = "#0f1e36";
@@ -836,14 +1001,12 @@ function createStudentAvatar(name, size=28) {{
     octx.fillStyle = "#163c6e";
     octx.fill();
 
-    // Initials in bright cyan
     octx.fillStyle = COLOR_CYAN;
     octx.font = "bold " + Math.floor(size * 0.45) + "px sans-serif";
     octx.textAlign = "center";
     octx.textBaseline = "middle";
     octx.fillText(inits, center, center);
 
-    // Glowing Cyan border
     octx.beginPath();
     octx.arc(center, center, radius, 0, Math.PI * 2);
     octx.lineWidth = 2;
@@ -854,7 +1017,7 @@ function createStudentAvatar(name, size=28) {{
 }}
 
 // ==============================================================================
-// 📐 COORDINATES & CORNER ASSIST COLLISION ENGINE
+// 📐 CORNER TURN ASSIST COLLISION ENGINE
 // ==============================================================================
 function gridToPixel(gx, gy) {{
     return [gx * TILE + TILE / 2, HUD_HEIGHT + gy * TILE + TILE / 2];
@@ -1043,7 +1206,7 @@ function getGuardsForLevel(dept, sem, lvlIdx) {{
 }}
 
 // ==============================================================================
-// 🏃 GAME STATE & MAIN LOOP
+// 🏃 GAME STATE
 // ==============================================================================
 let currentLevel = 0;
 let lives = 3;
@@ -1099,18 +1262,31 @@ function initLevel(lvlIdx) {{
 
 initLevel(0);
 
-// Input Handling
+// Keyboard bindings
 const keys = {{}};
 window.addEventListener("keydown", (e) => {{
     initAudio();
     keys[e.key.toLowerCase()] = true;
     if (e.key === "p" || e.key === "P" || e.key === "Escape") {{
-        if (gameState === "PLAYING") gameState = "PAUSED";
-        else if (gameState === "PAUSED") gameState = "PLAYING";
+        if (gameState === "PLAYING") {{
+            gameState = "PAUSED";
+            btnPause.innerText = "▶️";
+        }} else if (gameState === "PAUSED") {{
+            gameState = "PLAYING";
+            btnPause.innerText = "⏸️";
+        }}
     }}
     if (e.key === "m" || e.key === "M") {{
         soundEnabled = !soundEnabled;
-        document.getElementById("btn-sound").innerText = soundEnabled ? "🔊 Sound: ON" : "🔇 Sound: OFF";
+        if (soundEnabled) {{
+            modalSound.classList.remove("muted");
+            soundIcon.innerText = "🔊";
+            soundText.innerText = "SOUND: ON";
+        }} else {{
+            modalSound.classList.add("muted");
+            soundIcon.innerText = "🔇";
+            soundText.innerText = "SOUND: OFF";
+        }}
     }}
     if (e.key === " " || e.key === "Enter") {{
         if (gameState === "LEVEL_CLEAR") nextLevel();
@@ -1125,7 +1301,7 @@ window.addEventListener("keyup", (e) => {{
     keys[e.key.toLowerCase()] = false;
 }});
 
-// Touch Controls Bindings
+// Touch controls bindings
 function bindTouch(btnId, keyName) {{
     const el = document.getElementById(btnId);
     if (!el) return;
@@ -1133,29 +1309,15 @@ function bindTouch(btnId, keyName) {{
     const end = (e) => {{ e.preventDefault(); keys[keyName] = false; }};
     el.addEventListener("mousedown", start);
     el.addEventListener("mouseup", end);
-    el.addEventListener("touchstart", start);
-    el.addEventListener("touchend", end);
+    el.addEventListener("touchstart", start, {{ passive: false }});
+    el.addEventListener("touchend", end, {{ passive: false }});
 }}
 
-bindTouch("btn-up", "arrowup");
-bindTouch("btn-down", "arrowdown");
-bindTouch("btn-left", "arrowleft");
-bindTouch("btn-right", "arrowright");
-bindTouch("btn-sprint", "shift");
-
-document.getElementById("btn-sound").addEventListener("click", () => {{
-    soundEnabled = !soundEnabled;
-    document.getElementById("btn-sound").innerText = soundEnabled ? "🔊 Sound: ON" : "🔇 Sound: OFF";
-}});
-
-document.getElementById("btn-pause").addEventListener("click", () => {{
-    if (gameState === "PLAYING") gameState = "PAUSED";
-    else if (gameState === "PAUSED") gameState = "PLAYING";
-}});
-
-document.getElementById("btn-restart").addEventListener("click", () => {{
-    retryLevel();
-}});
+bindTouch("k-up", "arrowup");
+bindTouch("k-down", "arrowdown");
+bindTouch("k-left", "arrowleft");
+bindTouch("k-right", "arrowright");
+bindTouch("k-sprint", "shift");
 
 function spawnParticles(x, y, count=25, colors=[COLOR_CYAN, COLOR_GOLD, COLOR_GREEN]) {{
     for (let i = 0; i < count; i++) {{
@@ -1225,7 +1387,6 @@ function update(dt) {{
     if (invulnerableTimer > 0) invulnerableTimer -= dt;
     if (boostTimer > 0) boostTimer -= dt;
 
-    // Movement input
     let dx = 0, dy = 0;
     if (keys["arrowleft"] || keys["a"]) {{ dx -= 1; facingDir = "left"; }}
     if (keys["arrowright"] || keys["d"]) {{ dx += 1; facingDir = "right"; }}
@@ -1291,14 +1452,12 @@ function update(dt) {{
                 desired.push(py > g.y ? "down" : "up");
                 desired.push(px > g.x ? "right" : "left");
             }}
-            let moved = false;
             for (const d of desired) {{
                 const [vx, vy] = dirMap[d];
                 if (canMoveTo(g.x + vx * gSpeed, g.y + vy * gSpeed, g.radius, lvl.maze)) {{
                     g.x += vx * gSpeed;
                     g.y += vy * gSpeed;
                     g.dir = d;
-                    moved = true;
                     break;
                 }}
             }}
@@ -1413,17 +1572,16 @@ function update(dt) {{
 }}
 
 // ==============================================================================
-// 🎨 RENDERING PIPELINE
+// 🎨 RENDERING PIPELINE (Full Landscape Canvas)
 // ==============================================================================
 function render() {{
     const lvl = CONFIG.levels[currentLevel];
 
-    // Background Canvas
-    ctx.fillStyle = "#0c1322";
+    ctx.fillStyle = "#090e1a";
     ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
-    // Corridor Grid Lines
-    ctx.strokeStyle = "#141e33";
+    // Grid lines
+    ctx.strokeStyle = "#121b2f";
     ctx.lineWidth = 1;
     for (let x = 0; x < WIDTH; x += 30) {{
         ctx.beginPath();
@@ -1464,7 +1622,6 @@ function render() {{
     }}
 
     // Start Zone
-    const [startPx, startPy] = gridToPixel(1, 1);
     ctx.fillStyle = "rgba(46, 213, 115, 0.25)";
     ctx.fillRect(TILE, HUD_HEIGHT + TILE, TILE, TILE);
     ctx.strokeStyle = COLOR_GREEN;
@@ -1534,7 +1691,6 @@ function render() {{
     }};
 
     for (const g of guards) {{
-        // Vision Cone
         const ang = dirMap[g.dir];
         const fov = 0.9;
         const dist = 115;
@@ -1547,10 +1703,9 @@ function render() {{
         ctx.fill();
         ctx.restore();
 
-        // Draw Avatar Sprite
         ctx.drawImage(g.avatar, g.x - g.avatar.width / 2, g.y - g.avatar.height / 2);
 
-        // Nameplate
+        // Guard Nameplate
         ctx.fillStyle = "rgba(15, 23, 42, 0.85)";
         ctx.strokeStyle = g.alert ? COLOR_RED : "#475569";
         ctx.lineWidth = 1;
@@ -1565,7 +1720,7 @@ function render() {{
         ctx.fillText(g.name, g.x, g.y - 18);
     }}
 
-    // Draw Player (with dynamic initials student badge)
+    // Draw Player
     if (invulnerableTimer <= 0 || Math.floor(Date.now() / 100) % 2 === 0) {{
         if (boostTimer > 0) {{
             ctx.beginPath();
@@ -1576,7 +1731,6 @@ function render() {{
         }}
         ctx.drawImage(studentAvatar, px - studentAvatar.width / 2, py - studentAvatar.height / 2);
 
-        // Direction Indicator
         const noseAng = dirMap[facingDir];
         const nx = px + Math.cos(noseAng) * 14;
         const ny = py + Math.sin(noseAng) * 14;
@@ -1585,7 +1739,6 @@ function render() {{
         ctx.fillStyle = COLOR_WHITE;
         ctx.fill();
 
-        // Student Nameplate
         ctx.fillStyle = "rgba(15, 23, 42, 0.85)";
         ctx.strokeStyle = COLOR_CYAN;
         ctx.lineWidth = 1;
@@ -1610,7 +1763,7 @@ function render() {{
         ctx.globalAlpha = 1.0;
     }}
 
-    // Floating Text Notifications
+    // Floating Texts
     for (const ft of floatingTexts) {{
         ctx.fillStyle = ft.color;
         ctx.font = "bold 13px sans-serif";
@@ -1621,7 +1774,7 @@ function render() {{
     }}
 
     // ==========================================================================
-    // 👑 TOP HUD (Displays Branch, Sem, Roll, Score & Lives)
+    // 👑 TOP HUD (Level, Lives, Timer, Score)
     // ==========================================================================
     ctx.fillStyle = "rgba(10, 16, 28, 0.95)";
     ctx.fillRect(0, 0, WIDTH, HUD_HEIGHT);
@@ -1644,21 +1797,21 @@ function render() {{
     ctx.font = "bold 14px sans-serif";
     ctx.fillText(lvl.name, 110, 30);
 
-    // Center Lives & Info
+    // Lives & Info
     ctx.textAlign = "center";
     ctx.fillStyle = "#cbd5e1";
     ctx.font = "11px sans-serif";
-    ctx.fillText(CONFIG.student_name + " (" + CONFIG.student_roll + ")", WIDTH / 2, 18);
+    ctx.fillText(CONFIG.student_name + " (" + CONFIG.student_roll + ")", WIDTH / 2 - 30, 18);
 
     const hearts = "❤️ ".repeat(lives) + "🖤 ".repeat(Math.max(0, 3 - lives));
     ctx.fillStyle = COLOR_RED;
     ctx.font = "14px sans-serif";
-    ctx.fillText("LIVES: " + hearts, WIDTH / 2, 38);
+    ctx.fillText("LIVES: " + hearts, WIDTH / 2 - 30, 38);
 
     if (boostTimer > 0) {{
         ctx.fillStyle = COLOR_CYAN;
         ctx.font = "bold 11px sans-serif";
-        ctx.fillText("⚡ SPRINT READY! [HOLD SHIFT] (" + boostTimer.toFixed(1) + "s)", WIDTH / 2, 54);
+        ctx.fillText("⚡ SPRINT READY! [HOLD SPRINT] (" + boostTimer.toFixed(1) + "s)", WIDTH / 2 - 30, 54);
     }}
 
     // Timer & Score
@@ -1669,7 +1822,7 @@ function render() {{
     ctx.fillText("⏱️ " + elapsed.toFixed(1) + "s", WIDTH - 120, 24);
     ctx.fillText("⭐ " + totalScore + " PTS", WIDTH - 120, 44);
 
-    // Intro Splash Banner with Mini Photos
+    // Intro Splash Banner
     if (bannerTimer > 0) {{
         ctx.fillStyle = "rgba(10, 16, 28, 0.9)";
         ctx.fillRect(0, HEIGHT / 2 - 45, WIDTH, 90);
@@ -1687,12 +1840,12 @@ function render() {{
         ctx.fillText(lvl.desc, WIDTH / 2, HEIGHT / 2 + 15);
     }}
 
-    // Modals: Pause, Level Clear, Game Over, Victory
+    // In-game Modals (Pause, Clear, Game Over, Level 5 Victory)
     if (gameState === "PAUSED") {{
         drawModalCard("GAME PAUSED", [
-            "[ESC / P] Resume Bunk",
-            "[R] Restart Current Level",
-            "[M] Toggle Sound Effects"
+            "Game is paused.",
+            "Tap [⚙️] in upper right to toggle Sound or Restart.",
+            "Tap [▶️] to resume."
         ], COLOR_GOLD);
     }} else if (gameState === "LEVEL_CLEAR" && winData) {{
         drawModalCard("🎉 LEVEL " + winData.level + " CLEARED! 🎉", [
@@ -1701,14 +1854,14 @@ function render() {{
             "Items Collected: " + winData.itemsCollected + " / " + winData.itemsTotal,
             "Total Score: " + totalScore + " PTS",
             "",
-            "➔ CLICK TO ADVANCE TO NEXT LEVEL"
+            "➔ TAP SCREEN TO ADVANCE TO NEXT LEVEL"
         ], COLOR_GREEN, () => nextLevel());
     }} else if (gameState === "GAME_OVER") {{
         drawModalCard("BUSTED! ZERO ATTENDANCE 🎓❌", [
             "Caught by " + caughtByTeacher + "!",
             "Final Score: " + totalScore + " PTS",
             "",
-            "➔ CLICK TO RETRY LEVEL"
+            "➔ TAP SCREEN TO RETRY LEVEL"
         ], COLOR_RED, () => retryLevel());
     }} else if (gameState === "VICTORY") {{
         const totalTime = Math.round((Date.now() - gameStartTime) / 100) / 10;
@@ -1721,13 +1874,13 @@ function render() {{
             "Total Time: " + totalTime + "s  |  Final Score: " + totalScore + " PTS",
             "Awarded Title: " + rank,
             "",
-            "➔ CLICK TO PLAY AGAIN ↻"
+            "➔ TAP SCREEN TO PLAY AGAIN ↻"
         ], COLOR_GOLD, () => resetGame());
     }}
 }}
 
 function drawModalCard(title, lines, borderColor, onClickHandler=null) {{
-    ctx.fillStyle = "rgba(8, 12, 22, 0.94)";
+    ctx.fillStyle = "rgba(6, 9, 17, 0.94)";
     ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
     const cardW = 620;
@@ -1752,7 +1905,7 @@ function drawModalCard(title, lines, borderColor, onClickHandler=null) {{
         if (line.includes("UPCOMING LEVELS")) {{
             ctx.fillStyle = COLOR_CYAN;
             ctx.font = "bold 16px sans-serif";
-        }} else if (line.includes("CLICK TO")) {{
+        }} else if (line.includes("TAP SCREEN")) {{
             ctx.fillStyle = COLOR_GOLD;
             ctx.font = "bold 15px sans-serif";
         }} else {{
@@ -1769,98 +1922,10 @@ function drawModalCard(title, lines, borderColor, onClickHandler=null) {{
         }};
     }}
 }}
-
 </script>
 </body>
 </html>
 """
 
-# Embed the responsive web game component directly into Streamlit
-components.html(game_html, height=760, scrolling=False)
-
-# ==============================================================================
-# 🏆 ACADEMIC GALLERY & FACULTY DIRECTORY
-# ==============================================================================
-st.markdown("---")
-tab1, tab2, tab3 = st.tabs(["👥 Faculty Directory (21 Photos)", "📜 Mission Briefing & Lore", "🚀 Deployment Guide"])
-
-with tab1:
-    st.markdown("### 🎓 Full Faculty & Disciplinary Hunters Directory")
-    st.caption("All 21 faculty photos loaded dynamically into both Streamlit and the Web Game Engine:")
-
-    dept_cols = st.columns(3)
-    for idx, d_name in enumerate(DEPARTMENTS):
-        col = dept_cols[idx % 3]
-        with col:
-            with st.container():
-                st.markdown(f"#### 🏛️ {d_name} Department")
-                info = DEPARTMENT_FACULTY[d_name]
-                
-                # HOD
-                hod_name = info["hod"]
-                hod_img = get_photo_uri_for_name(hod_name)
-                c1, c2 = st.columns([1, 3])
-                with c1:
-                    if hod_img:
-                        st.markdown(f'<img src="{hod_img}" style="width: 48px; height: 48px; border-radius: 50%; border: 2px solid #ff4757; object-fit: cover;">', unsafe_allow_html=True)
-                    else:
-                        st.markdown(f'<div style="width: 48px; height: 48px; border-radius: 50%; background: #1a2a44; border: 2px solid #ff4757; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #ff4757;">{hod_name[:2].upper()}</div>', unsafe_allow_html=True)
-                with c2:
-                    st.markdown(f"**{hod_name}**<br><span style='color: #ff4757; font-size: 0.8rem;'>Department HOD</span>", unsafe_allow_html=True)
-
-                # Teachers
-                for t in info["teachers"]:
-                    t_img = get_photo_uri_for_name(t)
-                    tc1, tc2 = st.columns([1, 3])
-                    with tc1:
-                        if t_img:
-                            st.markdown(f'<img src="{t_img}" style="width: 42px; height: 42px; border-radius: 50%; border: 2px solid #00e5ff; object-fit: cover;">', unsafe_allow_html=True)
-                        else:
-                            st.markdown(f'<div style="width: 42px; height: 42px; border-radius: 50%; background: #1a2a44; border: 2px solid #00e5ff; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #00e5ff;">{t[:2].upper()}</div>', unsafe_allow_html=True)
-                    with tc2:
-                        st.markdown(f"**{t}**<br><span style='color: #2ed573; font-size: 0.75rem;'>Faculty</span>", unsafe_allow_html=True)
-                st.markdown("---")
-
-with tab2:
-    st.markdown("""
-    ### 🏫 The Legend of the College Bunk
-    
-    1. **Semester 1 & 2 Disciplinary Dragnet**:
-       - First and second semester students face strict campus discipline supervised by **Pooja Sharma (HOD)** alongside **Security** and **Bouncers**.
-    2. **Semester 3 to 8 Branch Specialization**:
-       - From Semester 3 onwards, departmental HODs and respective subject teachers take over hallway surveillance.
-    3. **Universal Campus Guards**:
-       - **Security** and **Bouncers** patrol every department, guarding corridors and stairwells.
-    4. **Level 5 Main Gate Showdown**:
-       - **Principal Isha Malhotra** locks down the main perimeter gate across all 9 departments and all semesters.
-    5. **Mission Target - THE GROUND**:
-       - Evade faculty vision cones, collect gate passes and coffee speed boosts, make smooth corner turns, and sprint safely to the **College GROUND**!
-    """)
-
-with tab3:
-    st.markdown("""
-    ### 🚀 How to Post / Host this on Streamlit Community Cloud (100% Free)
-    
-    You can deploy this Streamlit game so anyone on PC or mobile can play via a public web URL:
-    
-    1. **Create GitHub Repository**:
-       - Initialize a Git repo in this folder:
-         ```bash
-         git init
-         git add .
-         git commit -m "College Bunk Simulator Streamlit App"
-         ```
-       - Push to your GitHub account (e.g., `https://github.com/your-username/college-bunk-simulator`).
-       
-    2. **Deploy on Streamlit Community Cloud**:
-       - Go to [share.streamlit.io](https://share.streamlit.io).
-       - Sign in with your GitHub account.
-       - Click **"New app"**.
-       - Select your repository, branch (`main`), and set **Main file path** to `app.py`.
-       - Click **"Deploy!"**.
-       
-    3. **Run Locally**:
-       ```powershell
-       streamlit run app.py
-       ```
-    """)
+# Render the edge-to-edge fullscreen web application
+components.html(game_html, height=850, scrolling=False)
