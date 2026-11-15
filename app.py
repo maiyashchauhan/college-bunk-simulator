@@ -145,17 +145,24 @@ PHOTO_MAP = {
     'neha chauhan': 'neha chauhan.jpeg',
     'rajesh mattoo': 'rajesh mattoo.jpeg',
     'ankit aggarwal': 'ankit aggarwal.jpeg',
-    'yudhveer kumar verma': 'yudhveer kumar verma.jpeg'
+    'yudhveer kumar verma': 'yudhveer kumar verma.jpeg',
+    'security': 'security.jpeg',
+    'security guard': 'security.jpeg',
+    'bouncer': 'sonu_bouncer.jpeg',
+    'sonu bouncer': 'sonu_bouncer.jpeg',
+    'campus bouncer': 'sonu_bouncer.jpeg',
+    'counu bouncer': 'sonu_bouncer.jpeg'
 }
 
 # ==============================================================================
-# 📸 EMBEDDED FACULTY PHOTO ASSETS & DYNAMIC LOADER
+# 📸 EMBEDDED FACULTY & CAMPUS PHOTO ASSETS & DYNAMIC LOADER
 # ==============================================================================
 
 try:
-    from faculty_assets import FACULTY_PHOTOS
+    from faculty_assets import FACULTY_PHOTOS, GAME_BACKGROUND
 except Exception:
     FACULTY_PHOTOS = {}
+    GAME_BACKGROUND = ""
 
 def get_all_faculty_photos():
     # Start with all embedded base64 assets (guaranteed to be available on Streamlit Cloud)
@@ -172,6 +179,21 @@ def get_all_faculty_photos():
     return photos
 
 ALL_PHOTOS = get_all_faculty_photos()
+
+def get_game_background():
+    if GAME_BACKGROUND:
+        return GAME_BACKGROUND
+    for f in ["Snapchat-893693281.jpg", "snapchat.jpg", "college_bg.jpg"]:
+        if os.path.exists(f):
+            try:
+                with open(f, "rb") as img_f:
+                    b64 = base64.b64encode(img_f.read()).decode("utf-8")
+                    return f"data:image/jpeg;base64,{b64}"
+            except Exception:
+                pass
+    return ""
+
+GAME_BG_DATA = get_game_background()
 
 # ==============================================================================
 # 🗺️ 5 HAND-CRAFTED VERIFIED MAZE LEVELS (Exact same data as yash.py)
@@ -311,8 +333,8 @@ LEVEL_DATA = [
             "100010000000000000000000010001",
             "101010111111111111111111010101",
             "101000000000000000000000000101",
-            "101111110111111111110111111101",
-            "100000000100000000000000000001",
+            "101100110111100111100110011101",
+            "100000000000000000000000000001",
             "111111111111111111111111111111"
         ],
         "items": [
@@ -371,7 +393,8 @@ game_config = {
     "faculty_roster": DEPARTMENT_FACULTY,
     "principal_name": PRINCIPAL_NAME,
     "photos": ALL_PHOTOS,
-    "photo_map": PHOTO_MAP
+    "photo_map": PHOTO_MAP,
+    "background": GAME_BG_DATA
 }
 
 game_config_json = json.dumps(game_config)
@@ -452,8 +475,8 @@ game_html = f"""
 
     canvas {{
         display: block;
-        max-width: 100%;
-        max-height: 100%;
+        max-width: 95%;
+        max-height: 84vh;
         aspect-ratio: 900 / 630;
         object-fit: contain;
         background: #090e1a;
@@ -567,38 +590,44 @@ game_html = f"""
 
     /* =========================================================================
        🎮 FLOATING ERGONOMIC MOBILE TOUCH CONTROLS (Horizontal Landscape)
+       Ultra-translucent glassmorphic controls to keep all maze paths 100% visible
        ========================================================================= */
     #mobile-controls {{
         position: absolute;
-        bottom: 12px;
+        bottom: 6px;
         left: 0;
         width: 100% !important;
-        height: 140px;
+        height: 110px;
         pointer-events: none;
         display: flex;
         justify-content: space-between;
         align-items: flex-end;
-        padding: 0 20px;
+        padding: 0 12px;
         z-index: 300;
     }}
     .touch-dpad {{
         pointer-events: auto;
         display: grid;
-        grid-template-columns: repeat(3, 48px);
-        grid-template-rows: repeat(3, 44px);
-        gap: 3px;
-        background: rgba(15, 23, 42, 0.65);
-        border: 1px solid rgba(0, 229, 255, 0.4);
-        border-radius: 14px;
-        padding: 4px;
-        backdrop-filter: blur(8px);
+        grid-template-columns: repeat(3, 38px);
+        grid-template-rows: repeat(3, 34px);
+        gap: 2px;
+        background: rgba(6, 9, 17, 0.28);
+        border: 1px solid rgba(0, 229, 255, 0.3);
+        border-radius: 12px;
+        padding: 3px;
+        backdrop-filter: blur(4px);
+        opacity: 0.55;
+        transition: opacity 0.15s ease;
+    }}
+    .touch-dpad:active, .touch-dpad:focus-within {{
+        opacity: 0.92;
     }}
     .dpad-key {{
-        background: rgba(30, 41, 59, 0.88);
-        border: 1px solid rgba(0, 229, 255, 0.45);
-        border-radius: 8px;
+        background: rgba(15, 23, 42, 0.4);
+        border: 1px solid rgba(0, 229, 255, 0.35);
+        border-radius: 6px;
         color: #00e5ff;
-        font-size: 1.15rem;
+        font-size: 1.05rem;
         font-weight: bold;
         display: flex;
         align-items: center;
@@ -606,7 +635,7 @@ game_html = f"""
         cursor: pointer;
     }}
     .dpad-key:active {{
-        background: #00e5ff;
+        background: rgba(0, 229, 255, 0.7);
         color: #060911;
         transform: scale(0.92);
     }}
@@ -615,16 +644,32 @@ game_html = f"""
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 4px;
+        gap: 2px;
     }}
     .touch-sprint-btn {{
-        width: 84px;
-        height: 84px;
+        width: 66px;
+        height: 66px;
         border-radius: 50%;
-        background: linear-gradient(135deg, rgba(255, 71, 87, 0.9), rgba(255, 107, 129, 0.9));
-        border: 3px solid #ff4757;
+        background: linear-gradient(135deg, rgba(255, 71, 87, 0.45), rgba(255, 107, 129, 0.45));
+        border: 2px solid rgba(255, 71, 87, 0.65);
         color: white;
-        font-size: 0.95rem;
+        font-size: 0.85rem;
+        font-weight: 900;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 15px rgba(255, 71, 87, 0.25);
+        cursor: pointer;
+        backdrop-filter: blur(4px);
+        opacity: 0.55;
+        transition: opacity 0.15s ease, transform 0.1s ease;
+    }}
+    .touch-sprint-btn:active {{
+        opacity: 0.95;
+        transform: scale(0.92);
+        background: #ff4757;
+    }}
         font-weight: 900;
         display: flex;
         flex-direction: column;
@@ -869,10 +914,18 @@ function preloadAllPhotos(onDone) {{
     }});
 }}
 
+// College Snapchat Game Background Loader
+const bgImg = new Image();
+let bgImgLoaded = false;
+if (CONFIG.background) {{
+    bgImg.onload = () => {{ bgImgLoaded = true; }};
+    bgImg.src = CONFIG.background;
+}}
+
 function getPhotoForName(name) {{
     if (!name) return null;
     let norm = name.toLowerCase();
-    for (const clean of ['(hod)', '(principal)', 'principal', 'hod', 'faculty']) {{
+    for (const clean of ['(hod)', '(principal)', 'principal', 'hod', 'faculty', 'guard', 'campus']) {{
         norm = norm.replace(clean, '');
     }}
     norm = norm.trim();
@@ -887,6 +940,18 @@ function getPhotoForName(name) {{
     const jpegName = norm + ".jpeg";
     if (loadedImages[jpegName]) {{
         return loadedImages[jpegName];
+    }}
+    const jpgName = norm + ".jpg";
+    if (loadedImages[jpgName]) {{
+        return loadedImages[jpgName];
+    }}
+
+    // Special checks for security and bouncer
+    if (norm.includes("security") && loadedImages["security.jpeg"]) {{
+        return loadedImages["security.jpeg"];
+    }}
+    if ((norm.includes("bouncer") || norm.includes("sonu") || norm.includes("counu")) && loadedImages["sonu_bouncer.jpeg"]) {{
+        return loadedImages["sonu_bouncer.jpeg"];
     }}
 
     // 3. Substring matching
@@ -926,7 +991,7 @@ function createHunterAvatar(name, size=30) {{
         borderCol = "#f1c40f";
         fallbackBg = "#2c3e50";
         inits = "SC";
-    }} else if (norm.includes("bouncer")) {{
+    }} else if (norm.includes("bouncer") || norm.includes("sonu") || norm.includes("counu")) {{
         borderCol = "#e67e22";
         fallbackBg = "#d35400";
         inits = "BC";
@@ -1584,11 +1649,19 @@ function update(dt) {{
 function render() {{
     const lvl = CONFIG.levels[currentLevel];
 
-    ctx.fillStyle = "#090e1a";
-    ctx.fillRect(0, 0, WIDTH, HEIGHT);
+    // 1. College Snapchat Campus Game Background
+    if (bgImg && (bgImgLoaded || (bgImg.complete && bgImg.naturalWidth > 0))) {{
+        ctx.drawImage(bgImg, 0, HUD_HEIGHT, WIDTH, HEIGHT - HUD_HEIGHT);
+        // Semi-transparent dark atmospheric cyber tint to keep maze walls & paths sharp
+        ctx.fillStyle = "rgba(6, 9, 17, 0.72)";
+        ctx.fillRect(0, HUD_HEIGHT, WIDTH, HEIGHT - HUD_HEIGHT);
+    }} else {{
+        ctx.fillStyle = "#090e1a";
+        ctx.fillRect(0, 0, WIDTH, HEIGHT);
+    }}
 
     // Grid lines
-    ctx.strokeStyle = "#121b2f";
+    ctx.strokeStyle = "rgba(18, 27, 47, 0.6)";
     ctx.lineWidth = 1;
     for (let x = 0; x < WIDTH; x += 30) {{
         ctx.beginPath();

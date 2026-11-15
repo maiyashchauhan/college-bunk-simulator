@@ -129,9 +129,14 @@ def safe_load_image(filepath, size=None):
     return None
 
 def load_college_background():
-    img = safe_load_image(COLLEGE_BG_PATH, (WIDTH, HEIGHT))
-    if img:
-        return img
+    for bg_file in ["Snapchat-893693281.jpg", COLLEGE_BG_PATH, "college_bg.jpg"]:
+        img = safe_load_image(bg_file, (WIDTH, HEIGHT))
+        if img:
+            # Apply dark atmospheric cyber tint so maze corridors stay 100% visible
+            tint = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+            tint.fill((8, 12, 22, 175))
+            img.blit(tint, (0, 0))
+            return img
     fallback = pygame.Surface((WIDTH, HEIGHT))
     fallback.fill((22, 28, 42))
     for x in range(0, WIDTH, 40):
@@ -166,7 +171,11 @@ def create_circular_avatar(img_surface, size=26, border_color=(0, 230, 255), bor
 # ---------- Photo Resolution & Cache for All Faculty & Roles ----------
 PHOTO_MAP = {
     'bouncer': ['SONU_BOUNCER.jpeg', 'sonu_bouncer.jpeg', 'bouncer.jpeg', 'bouncer.jpg'],
+    'sonu bouncer': ['SONU_BOUNCER.jpeg', 'sonu_bouncer.jpeg'],
+    'campus bouncer': ['SONU_BOUNCER.jpeg', 'sonu_bouncer.jpeg'],
+    'counu bouncer': ['SONU_BOUNCER.jpeg', 'sonu_bouncer.jpeg'],
     'security': ['SECURITY.jpeg', 'security.jpeg', 'security.jpg'],
+    'security guard': ['SECURITY.jpeg', 'security.jpeg', 'security.jpg'],
     'isha malhotra': ['isha malhotra.jpeg'],
     'pooja sharma': ['pooja sharma.jpeg', 'hod_pooja.jpeg'],
     'vaishali dixit': ['vaishali dixit.jpeg'],
@@ -488,8 +497,8 @@ LEVEL_DATA = [
             "100010000000000000000000010001",
             "101010111111111111111111010101",
             "101000000000000000000000000101",
-            "101111110111111111110111111101",
-            "100000000100000000000000000001",
+            "101100110111100111100110011101",
+            "100000000000000000000000000001",
             "111111111111111111111111111111"
         ],
         "items": [
