@@ -23,15 +23,15 @@ st.set_page_config(
 # Completely remove Streamlit UI padding, margins, headers, and footers for pure full screen
 st.markdown("""
 <style>
-    /* Hide Streamlit header, footer, decoration, and toolbars */
-    #MainMenu, header, footer, .stDeployButton, [data-testid="stToolbar"], [data-testid="stDecoration"], [data-testid="stStatusWidget"] {
+    /* Hide Streamlit header, footer, decoration, deploy button, and toolbars */
+    #MainMenu, header, footer, .stDeployButton, [data-testid="stToolbar"], [data-testid="stDecoration"], [data-testid="stStatusWidget"], [data-testid="stHeader"] {
         display: none !important;
         visibility: hidden !important;
     }
     
     /* Zero padding and fixed full viewport */
-    html, body, .stApp {
-        background-color: #070b12 !important;
+    html, body, .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"], .main {
+        background-color: #060911 !important;
         margin: 0 !important;
         padding: 0 !important;
         overflow: hidden !important;
@@ -48,7 +48,7 @@ st.markdown("""
     }
     
     /* Full viewport iframe container */
-    iframe {
+    iframe, [data-testid="stCustomComponentV1"], .element-container {
         position: fixed !important;
         top: 0 !important;
         left: 0 !important;
@@ -148,9 +148,19 @@ PHOTO_MAP = {
     'yudhveer kumar verma': 'yudhveer kumar verma.jpeg'
 }
 
-# Optional local photo loader
-def get_local_photos_base64():
-    photos = {}
+# ==============================================================================
+# 📸 EMBEDDED FACULTY PHOTO ASSETS & DYNAMIC LOADER
+# ==============================================================================
+
+try:
+    from faculty_assets import FACULTY_PHOTOS
+except Exception:
+    FACULTY_PHOTOS = {}
+
+def get_all_faculty_photos():
+    # Start with all embedded base64 assets (guaranteed to be available on Streamlit Cloud)
+    photos = dict(FACULTY_PHOTOS)
+    # Also scan current directory if local image files exist
     for f in os.listdir('.'):
         if f.lower().endswith(('.jpeg', '.jpg', '.png')):
             try:
@@ -161,7 +171,7 @@ def get_local_photos_base64():
                 pass
     return photos
 
-ALL_PHOTOS = get_local_photos_base64()
+ALL_PHOTOS = get_all_faculty_photos()
 
 # ==============================================================================
 # 🗺️ 5 HAND-CRAFTED VERIFIED MAZE LEVELS (Exact same data as yash.py)
@@ -393,28 +403,65 @@ game_html = f"""
         background: #060911;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         color: #fff;
-    }}
-    #game-container {{
-        position: relative;
-        width: 100vw;
-        height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: #060911;
-    }}
-    canvas {{
-        display: block;
-        max-width: 100vw;
-        max-height: 100vh;
-        aspect-ratio: 900 / 630;
-        object-fit: contain;
-        background: #090e1a;
-        box-shadow: 0 0 35px rgba(0, 229, 255, 0.2);
+        position: fixed;
     }}
 
     /* =========================================================================
-       👑 UPPER RIGHT CORNER CONTROLS (Pause & Settings)
+       📱 AUTOMATIC FULLSCREEN HORIZONTAL LAYOUT (NO ASKING / NO POPUP)
+       ========================================================================= */
+    #game-container {{
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        background: #060911 !important;
+        overflow: hidden !important;
+        transform-origin: center center !important;
+    }}
+
+    /* Automatic 90-degree Horizontal Rotation in Portrait (Zero popups / dont ask) */
+    @media screen and (orientation: portrait) {{
+        #game-container {{
+            top: 50% !important;
+            left: 50% !important;
+            width: 100vh !important;
+            height: 100vw !important;
+            transform: translate(-50%, -50%) rotate(90deg) !important;
+        }}
+    }}
+
+    /* Dynamic JS class fallback for 100% reliable auto-rotation */
+    #game-container.mode-portrait {{
+        top: 50% !important;
+        left: 50% !important;
+        width: 100vh !important;
+        height: 100vw !important;
+        transform: translate(-50%, -50%) rotate(90deg) !important;
+    }}
+    #game-container.mode-landscape {{
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        transform: none !important;
+    }}
+
+    canvas {{
+        display: block;
+        max-width: 100%;
+        max-height: 100%;
+        aspect-ratio: 900 / 630;
+        object-fit: contain;
+        background: #090e1a;
+        box-shadow: 0 0 35px rgba(0, 229, 255, 0.25);
+    }}
+
+    /* =========================================================================
+       👑 UPPER RIGHT CORNER CONTROLS (Pause in one, Settings in other)
        ========================================================================= */
     #corner-controls {{
         position: absolute;
@@ -422,16 +469,16 @@ game_html = f"""
         right: 14px;
         z-index: 500;
         display: flex;
-        gap: 8px;
+        gap: 10px;
     }}
     .corner-btn {{
-        width: 42px;
-        height: 42px;
+        width: 44px;
+        height: 44px;
         border-radius: 50%;
-        background: rgba(15, 23, 42, 0.85);
+        background: rgba(15, 23, 42, 0.88);
         border: 2px solid #00e5ff;
         color: #00e5ff;
-        font-size: 1.15rem;
+        font-size: 1.25rem;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -453,9 +500,9 @@ game_html = f"""
         position: absolute;
         top: 0;
         left: 0;
-        width: 100vw;
-        height: 100vh;
-        background: rgba(6, 9, 17, 0.88);
+        width: 100% !important;
+        height: 100% !important;
+        background: rgba(6, 9, 17, 0.92);
         backdrop-filter: blur(10px);
         z-index: 1000;
         display: none;
@@ -464,7 +511,7 @@ game_html = f"""
     }}
     .settings-card {{
         width: 90%;
-        max-width: 440px;
+        max-width: 420px;
         background: #0f172a;
         border: 2px solid #00e5ff;
         border-radius: 16px;
@@ -507,11 +554,6 @@ game_html = f"""
         border: 2px solid #ffd700;
         color: #ffd700;
     }}
-    .btn-fs {{
-        background: #1e293b;
-        border: 2px solid #00e5ff;
-        color: #00e5ff;
-    }}
     .btn-close {{
         background: linear-gradient(135deg, #00e5ff, #0077b6);
         border: none;
@@ -524,97 +566,39 @@ game_html = f"""
     }}
 
     /* =========================================================================
-       📱 HORIZONTAL ROTATE SCREEN PROMPT (Phone Level)
-       ========================================================================= */
-    #rotate-overlay {{
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background: rgba(6, 9, 17, 0.96);
-        z-index: 2000;
-        display: none;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        padding: 20px;
-    }}
-    .rotate-phone-anim {{
-        font-size: 3.5rem;
-        margin-bottom: 16px;
-        animation: rotateIcon 2s infinite ease-in-out;
-    }}
-    @keyframes rotateIcon {{
-        0%, 20% {{ transform: rotate(0deg); }}
-        50%, 80% {{ transform: rotate(-90deg); }}
-        100% {{ transform: rotate(0deg); }}
-    }}
-    .rotate-title {{
-        font-size: 1.4rem;
-        font-weight: 800;
-        color: #00e5ff;
-        margin-bottom: 8px;
-    }}
-    .rotate-desc {{
-        font-size: 0.95rem;
-        color: #94a3b8;
-        max-width: 320px;
-        margin-bottom: 20px;
-    }}
-    .btn-dismiss-rotate {{
-        background: #1e293b;
-        border: 1px solid #00e5ff;
-        color: #00e5ff;
-        padding: 10px 20px;
-        border-radius: 8px;
-        font-size: 0.9rem;
-        font-weight: bold;
-        cursor: pointer;
-    }}
-
-    /* Show rotate alert only in mobile portrait */
-    @media (orientation: portrait) and (max-width: 768px) {{
-        #rotate-overlay.active {{
-            display: flex !important;
-        }}
-    }}
-
-    /* =========================================================================
        🎮 FLOATING ERGONOMIC MOBILE TOUCH CONTROLS (Horizontal Landscape)
        ========================================================================= */
     #mobile-controls {{
         position: absolute;
         bottom: 12px;
         left: 0;
-        width: 100vw;
+        width: 100% !important;
         height: 140px;
         pointer-events: none;
         display: flex;
         justify-content: space-between;
         align-items: flex-end;
-        padding: 0 18px;
+        padding: 0 20px;
         z-index: 300;
     }}
     .touch-dpad {{
         pointer-events: auto;
         display: grid;
-        grid-template-columns: repeat(3, 46px);
+        grid-template-columns: repeat(3, 48px);
         grid-template-rows: repeat(3, 44px);
         gap: 3px;
-        background: rgba(15, 23, 42, 0.55);
-        border: 1px solid rgba(0, 229, 255, 0.35);
-        border-radius: 12px;
+        background: rgba(15, 23, 42, 0.65);
+        border: 1px solid rgba(0, 229, 255, 0.4);
+        border-radius: 14px;
         padding: 4px;
-        backdrop-filter: blur(6px);
+        backdrop-filter: blur(8px);
     }}
     .dpad-key {{
-        background: rgba(30, 41, 59, 0.85);
-        border: 1px solid rgba(0, 229, 255, 0.4);
+        background: rgba(30, 41, 59, 0.88);
+        border: 1px solid rgba(0, 229, 255, 0.45);
         border-radius: 8px;
         color: #00e5ff;
-        font-size: 1.1rem;
+        font-size: 1.15rem;
         font-weight: bold;
         display: flex;
         align-items: center;
@@ -634,10 +618,10 @@ game_html = f"""
         gap: 4px;
     }}
     .touch-sprint-btn {{
-        width: 82px;
-        height: 82px;
+        width: 84px;
+        height: 84px;
         border-radius: 50%;
-        background: linear-gradient(135deg, rgba(255, 71, 87, 0.85), rgba(255, 107, 129, 0.85));
+        background: linear-gradient(135deg, rgba(255, 71, 87, 0.9), rgba(255, 107, 129, 0.9));
         border: 3px solid #ff4757;
         color: white;
         font-size: 0.95rem;
@@ -648,7 +632,7 @@ game_html = f"""
         justify-content: center;
         box-shadow: 0 4px 20px rgba(255, 71, 87, 0.4);
         cursor: pointer;
-        backdrop-filter: blur(6px);
+        backdrop-filter: blur(8px);
     }}
     .touch-sprint-btn:active {{
         transform: scale(0.9);
@@ -662,10 +646,10 @@ game_html = f"""
     <!-- Main Fullscreen Game Canvas -->
     <canvas id="gameCanvas" width="900" height="630"></canvas>
 
-    <!-- Upper Right Corner Controls -->
+    <!-- Upper Right Corner Controls: Pause in one, Settings in other -->
     <div id="corner-controls">
         <button class="corner-btn" id="btn-pause" title="Pause / Resume">⏸️</button>
-        <button class="corner-btn" id="btn-settings" title="Settings (Sound, Restart)">⚙️</button>
+        <button class="corner-btn" id="btn-settings" title="Settings (Sound & Restart Level)">⚙️</button>
     </div>
 
     <!-- Ergonomic On-Screen Touch Controls (Mobile Horizontal) -->
@@ -691,36 +675,24 @@ game_html = f"""
             </button>
         </div>
     </div>
-</div>
 
-<!-- ⚙️ SETTINGS MODAL: Sound and Restart in One Place -->
-<div id="settings-modal">
-    <div class="settings-card">
-        <div class="settings-title">⚙️ GAME SETTINGS</div>
-        <button class="settings-btn btn-sound" id="modal-sound">
-            <span id="sound-icon">🔊</span>
-            <span id="sound-text">SOUND: ON</span>
-        </button>
-        <button class="settings-btn btn-restart" id="modal-restart">
-            <span>🔄</span>
-            <span>RESTART CURRENT LEVEL</span>
-        </button>
-        <button class="settings-btn btn-fs" id="modal-fullscreen">
-            <span>⛶</span>
-            <span>TOGGLE FULLSCREEN</span>
-        </button>
-        <button class="settings-btn btn-close" id="modal-close">
-            <span>✕ RESUME GAME</span>
-        </button>
+    <!-- ⚙️ SETTINGS MODAL: Sound and Restart in One Place -->
+    <div id="settings-modal">
+        <div class="settings-card">
+            <div class="settings-title">⚙️ GAME SETTINGS</div>
+            <button class="settings-btn btn-sound" id="modal-sound">
+                <span id="sound-icon">🔊</span>
+                <span id="sound-text">SOUND: ON</span>
+            </button>
+            <button class="settings-btn btn-restart" id="modal-restart">
+                <span>🔄</span>
+                <span>RESTART CURRENT LEVEL</span>
+            </button>
+            <button class="settings-btn btn-close" id="modal-close">
+                <span>✕ RESUME GAME</span>
+            </button>
+        </div>
     </div>
-</div>
-
-<!-- 📱 ROTATE SCREEN OVERLAY (Phone Level) -->
-<div id="rotate-overlay" class="active">
-    <div class="rotate-phone-anim">📱</div>
-    <div class="rotate-title">ROTATE PHONE HORIZONTALLY</div>
-    <div class="rotate-desc">Turn your screen sideways for full-screen landscape arcade gaming!</div>
-    <button class="btn-dismiss-rotate" id="btn-rotate-dismiss">Play in Landscape ➔</button>
 </div>
 
 <script>
@@ -785,43 +757,27 @@ function playWinSound() {{
 }}
 
 // ==============================================================================
-// 📱 SCREEN ROTATION & FULLSCREEN MANAGEMENT
+// 📱 SCREEN AUTO-ROTATION (Automatic Horizontal, No Popups / No Asking)
 // ==============================================================================
-const rotateOverlay = document.getElementById("rotate-overlay");
-const btnRotateDismiss = document.getElementById("btn-rotate-dismiss");
+const gameContainer = document.getElementById("game-container");
 
-function checkOrientation() {{
-    const isPortrait = window.innerHeight > window.innerWidth && window.innerWidth <= 768;
+function updateOrientation() {{
+    if (!gameContainer) return;
+    const isPortrait = window.innerHeight > window.innerWidth;
     if (isPortrait) {{
-        rotateOverlay.classList.add("active");
+        gameContainer.classList.add("mode-portrait");
+        gameContainer.classList.remove("mode-landscape");
     }} else {{
-        rotateOverlay.classList.remove("active");
+        gameContainer.classList.add("mode-landscape");
+        gameContainer.classList.remove("mode-portrait");
     }}
 }}
-window.addEventListener("resize", checkOrientation);
-window.addEventListener("orientationchange", checkOrientation);
-checkOrientation();
-
-btnRotateDismiss.addEventListener("click", () => {{
-    initAudio();
-    rotateOverlay.classList.remove("active");
-    requestLandscapeFullscreen();
-}});
-
-function requestLandscapeFullscreen() {{
-    const el = document.documentElement;
-    if (el.requestFullscreen) el.requestFullscreen();
-    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-    else if (el.mozRequestFullScreen) el.mozRequestFullScreen();
-    else if (el.msRequestFullscreen) el.msRequestFullscreen();
-
-    if (screen.orientation && screen.orientation.lock) {{
-        screen.orientation.lock("landscape").catch(() => {{}});
-    }}
-}}
+window.addEventListener("resize", updateOrientation);
+window.addEventListener("orientationchange", updateOrientation);
+updateOrientation();
 
 // ==============================================================================
-// ⚙️ UPPER RIGHT CORNER & SETTINGS MODAL
+// 👑 UPPER RIGHT CORNER & SETTINGS MODAL (Pause in one, Settings in other)
 // ==============================================================================
 const btnPause = document.getElementById("btn-pause");
 const btnSettings = document.getElementById("btn-settings");
@@ -830,7 +786,6 @@ const modalSound = document.getElementById("modal-sound");
 const soundIcon = document.getElementById("sound-icon");
 const soundText = document.getElementById("sound-text");
 const modalRestart = document.getElementById("modal-restart");
-const modalFullscreen = document.getElementById("modal-fullscreen");
 const modalClose = document.getElementById("modal-close");
 
 btnPause.addEventListener("click", () => {{
@@ -872,10 +827,6 @@ modalRestart.addEventListener("click", () => {{
     btnPause.innerText = "⏸️";
 }});
 
-modalFullscreen.addEventListener("click", () => {{
-    requestLandscapeFullscreen();
-}});
-
 modalClose.addEventListener("click", () => {{
     settingsModal.style.display = "none";
     gameState = "PLAYING";
@@ -883,35 +834,75 @@ modalClose.addEventListener("click", () => {{
 }});
 
 // ==============================================================================
-// 🖼️ AVATAR RENDERING (Dynamic Initials Badges)
+// 🖼️ FACULTY PHOTO ASSETS & HIGH-RES AVATAR SYSTEM
 // ==============================================================================
 const loadedImages = {{}};
-for (const [key, uri] of Object.entries(CONFIG.photos || {{}})) {{
-    const img = new Image();
-    img.src = uri;
-    loadedImages[key] = img;
+const photoEntries = Object.entries(CONFIG.photos || {{}});
+let loadedPhotosCount = 0;
+
+function preloadAllPhotos(onDone) {{
+    if (photoEntries.length === 0) {{
+        if (onDone) onDone();
+        return;
+    }}
+    let doneCalled = false;
+    const finish = () => {{
+        if (!doneCalled) {{
+            doneCalled = true;
+            if (onDone) onDone();
+        }}
+    }};
+    // Maximum 800ms wait
+    const timer = setTimeout(finish, 800);
+
+    photoEntries.forEach(([key, uri]) => {{
+        const img = new Image();
+        img.onload = img.onerror = () => {{
+            loadedPhotosCount++;
+            if (loadedPhotosCount >= photoEntries.length) {{
+                clearTimeout(timer);
+                finish();
+            }}
+        }};
+        img.src = uri;
+        loadedImages[key.toLowerCase()] = img;
+    }});
 }}
 
 function getPhotoForName(name) {{
+    if (!name) return null;
     let norm = name.toLowerCase();
-    for (const clean of ['(hod)', '(principal)', 'principal', 'hod']) {{
+    for (const clean of ['(hod)', '(principal)', 'principal', 'hod', 'faculty']) {{
         norm = norm.replace(clean, '');
     }}
     norm = norm.trim();
-    const targetFile = CONFIG.photo_map[norm];
-    if (targetFile && loadedImages[targetFile]) {{
-        return loadedImages[targetFile];
+
+    // 1. Direct match in photo_map
+    const mapped = CONFIG.photo_map[norm];
+    if (mapped && loadedImages[mapped.toLowerCase()]) {{
+        return loadedImages[mapped.toLowerCase()];
     }}
+
+    // 2. Direct key in loadedImages
+    const jpegName = norm + ".jpeg";
+    if (loadedImages[jpegName]) {{
+        return loadedImages[jpegName];
+    }}
+
+    // 3. Substring matching
     for (const k of Object.keys(loadedImages)) {{
-        if (k.includes(norm)) return loadedImages[k];
+        const base = k.replace(/\\.(jpeg|jpg|png)$/i, '');
+        if (base === norm || base.includes(norm) || norm.includes(base)) {{
+            return loadedImages[k];
+        }}
     }}
     return null;
 }}
 
-function createHunterAvatar(name, size=28) {{
+function createHunterAvatar(name, size=30) {{
     const off = document.createElement("canvas");
-    off.width = size + 4;
-    off.height = size + 4;
+    off.width = size + 6;
+    off.height = size + 6;
     const octx = off.getContext("2d");
     const center = off.width / 2;
     const radius = size / 2;
@@ -950,8 +941,10 @@ function createHunterAvatar(name, size=28) {{
     octx.arc(center, center, radius, 0, Math.PI * 2);
     octx.clip();
 
+    let hasPhoto = false;
     if (img && img.complete && img.naturalWidth > 0) {{
         octx.drawImage(img, center - radius, center - radius, size, size);
+        hasPhoto = true;
     }} else {{
         octx.fillStyle = fallbackBg;
         octx.fill();
@@ -963,13 +956,16 @@ function createHunterAvatar(name, size=28) {{
     }}
     octx.restore();
 
-    // Border ring
+    // Glowing outer ring
     octx.beginPath();
     octx.arc(center, center, radius, 0, Math.PI * 2);
     octx.lineWidth = 2.5;
     octx.strokeStyle = borderCol;
+    octx.shadowColor = borderCol;
+    octx.shadowBlur = 6;
     octx.stroke();
 
+    off.hasPhoto = hasPhoto;
     return off;
 }}
 
@@ -1200,7 +1196,7 @@ function getGuardsForLevel(dept, sem, lvlIdx) {{
             alert: false,
             alertTimer: 0,
             radius: 11,
-            avatar: createHunterAvatar(name, 28)
+            avatar: createHunterAvatar(name, 30)
         }};
     }});
 }}
@@ -1226,7 +1222,7 @@ let guards = [];
 let items = [];
 let particles = [];
 let floatingTexts = [];
-let bannerTimer = 2.5;
+let bannerTimer = 1.0;
 
 let caughtByTeacher = "Faculty";
 let winData = null;
@@ -1241,7 +1237,7 @@ function initLevel(lvlIdx) {{
     boostTimer = 0;
     invulnerableTimer = 1.8;
     facingDir = "right";
-    bannerTimer = 2.5;
+    bannerTimer = 1.0;
     levelStartTime = Date.now();
 
     guards = getGuardsForLevel(CONFIG.student_dept, CONFIG.student_sem, lvlIdx);
@@ -1261,6 +1257,15 @@ function initLevel(lvlIdx) {{
 }}
 
 initLevel(0);
+
+// Preload faculty photo assets and dynamically upgrade guard avatars once decoded
+preloadAllPhotos(() => {{
+    if (guards && guards.length > 0) {{
+        guards.forEach(g => {{
+            g.avatar = createHunterAvatar(g.name, 30);
+        }});
+    }}
+}});
 
 // Keyboard bindings
 const keys = {{}};
@@ -1301,16 +1306,18 @@ window.addEventListener("keyup", (e) => {{
     keys[e.key.toLowerCase()] = false;
 }});
 
-// Touch controls bindings
+// Touch controls bindings with multi-touch & slide off protection
 function bindTouch(btnId, keyName) {{
     const el = document.getElementById(btnId);
     if (!el) return;
-    const start = (e) => {{ e.preventDefault(); initAudio(); keys[keyName] = true; }};
-    const end = (e) => {{ e.preventDefault(); keys[keyName] = false; }};
+    const start = (e) => {{ e.preventDefault(); e.stopPropagation(); initAudio(); keys[keyName] = true; }};
+    const end = (e) => {{ e.preventDefault(); e.stopPropagation(); keys[keyName] = false; }};
     el.addEventListener("mousedown", start);
     el.addEventListener("mouseup", end);
+    el.addEventListener("mouseleave", end);
     el.addEventListener("touchstart", start, {{ passive: false }});
     el.addEventListener("touchend", end, {{ passive: false }});
+    el.addEventListener("touchcancel", end, {{ passive: false }});
 }}
 
 bindTouch("k-up", "arrowup");
@@ -1703,6 +1710,13 @@ function render() {{
         ctx.fill();
         ctx.restore();
 
+        // Dynamic Photo Upgrade: ensure real faculty photo renders on sprite
+        if (!g.avatar || !g.avatar.hasPhoto) {{
+            const photoImg = getPhotoForName(g.name);
+            if (photoImg && photoImg.complete && photoImg.naturalWidth > 0) {{
+                g.avatar = createHunterAvatar(g.name, 30);
+            }}
+        }}
         ctx.drawImage(g.avatar, g.x - g.avatar.width / 2, g.y - g.avatar.height / 2);
 
         // Guard Nameplate
@@ -1862,7 +1876,7 @@ function render() {{
             "Final Score: " + totalScore + " PTS",
             "",
             "➔ TAP SCREEN TO RETRY LEVEL"
-        ], COLOR_RED, () => retryLevel());
+        ], COLOR_RED, () => retryLevel(), caughtByTeacher);
     }} else if (gameState === "VICTORY") {{
         const totalTime = Math.round((Date.now() - gameStartTime) / 100) / 10;
         const rank = totalScore > 3000 ? "Master Bunk King (S-Rank)" : "Elite Bunk Specialist (A-Rank)";
@@ -1875,16 +1889,16 @@ function render() {{
             "Awarded Title: " + rank,
             "",
             "➔ TAP SCREEN TO PLAY AGAIN ↻"
-        ], COLOR_GOLD, () => resetGame());
+        ], COLOR_GOLD, () => resetGame(), CONFIG.principal_name);
     }}
 }}
 
-function drawModalCard(title, lines, borderColor, onClickHandler=null) {{
+function drawModalCard(title, lines, borderColor, onClickHandler=null, featuredTeacher=null) {{
     ctx.fillStyle = "rgba(6, 9, 17, 0.94)";
     ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
     const cardW = 620;
-    const cardH = 380;
+    const cardH = 390;
     const cardX = WIDTH / 2 - cardW / 2;
     const cardY = HEIGHT / 2 - cardH / 2;
 
@@ -1897,7 +1911,37 @@ function drawModalCard(title, lines, borderColor, onClickHandler=null) {{
     ctx.textAlign = "center";
     ctx.fillStyle = borderColor;
     ctx.font = "bold 22px sans-serif";
-    ctx.fillText(title, WIDTH / 2, cardY + 40);
+    ctx.fillText(title, WIDTH / 2, cardY + 36);
+
+    let textStartY = cardY + 95;
+
+    // Featured Faculty Photo Badge (e.g. Caught by Teacher or Principal Boss)
+    if (featuredTeacher) {{
+        const featImg = getPhotoForName(featuredTeacher);
+        if (featImg && featImg.complete && featImg.naturalWidth > 0) {{
+            const pSize = 64;
+            const pxCenter = WIDTH / 2;
+            const pyCenter = cardY + 76;
+
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(pxCenter, pyCenter, pSize / 2, 0, Math.PI * 2);
+            ctx.clip();
+            ctx.drawImage(featImg, pxCenter - pSize / 2, pyCenter - pSize / 2, pSize, pSize);
+            ctx.restore();
+
+            // Glow border around photo
+            ctx.beginPath();
+            ctx.arc(pxCenter, pyCenter, pSize / 2, 0, Math.PI * 2);
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = borderColor;
+            ctx.shadowColor = borderColor;
+            ctx.shadowBlur = 8;
+            ctx.stroke();
+
+            textStartY = pyCenter + pSize / 2 + 24;
+        }}
+    }}
 
     ctx.font = "14px sans-serif";
     for (let i = 0; i < lines.length; i++) {{
@@ -1912,13 +1956,19 @@ function drawModalCard(title, lines, borderColor, onClickHandler=null) {{
             ctx.fillStyle = COLOR_WHITE;
             ctx.font = "14px sans-serif";
         }}
-        ctx.fillText(line, WIDTH / 2, cardY + 95 + i * 28);
+        ctx.fillText(line, WIDTH / 2, textStartY + i * 26);
     }}
 
     if (onClickHandler) {{
-        canvas.onclick = () => {{
+        const trigger = () => {{
             canvas.onclick = null;
+            canvas.ontouchend = null;
             onClickHandler();
+        }};
+        canvas.onclick = trigger;
+        canvas.ontouchend = (e) => {{
+            e.preventDefault();
+            trigger();
         }};
     }}
 }}

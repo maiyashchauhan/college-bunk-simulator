@@ -1,6 +1,6 @@
 # 🎓 College Bunk Simulator 🏫
 
-A high-octane 2D campus stealth maze runner featuring **real faculty photos**, **5 distinct floors**, **9 academic branches**, and **smooth corner navigation**. Available as both a **Streamlit Web App** and a **Native Pygame Desktop Game**.
+A high-octane 2D campus stealth maze runner featuring **5 distinct floors**, **9 academic branches**, and **smooth corner navigation**. Available as both a **Streamlit Web App** and a **Native Pygame Desktop Game**.
 
 ---
 
