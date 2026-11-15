@@ -14,7 +14,7 @@ A high-octane 2D campus stealth maze runner featuring **5 distinct floors**, **9
   - `ASH`, `CSE`, `CSIT`, `CSE(AI & ML)`, `CSE(IOT & CS)`, `ECE`, `ECS`, `ME`, `RA`
   - **Semesters 1 & 2 Rule**: 1st-year disciplinary dragnet supervised by HOD Pooja Sharma, Security, and Bouncer.
   - **Semesters 3–8 Rule**: Branch-specific faculty and HODs actively patrol corridors.
-- **👑 Principal Isha Malhotra (Final Boss)**: Stationed at the Main Gate in Level 5 across all departments and semesters.
+- **👑 Principal (Final Boss)**: Stationed at the Main Gate in Level 5 across all departments and semesters.
 - **🏃 Thickened Turns & Corner Auto-Assist**:
   - Pac-Man style corridor auto-centering and corner turn alignment prevents sticking or snagging on tight turns on PC keyboard or mobile touch.
 - **🏆 Level 5 Completion**:
