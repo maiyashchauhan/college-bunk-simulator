@@ -475,12 +475,16 @@ game_html = f"""
 
     canvas {{
         display: block;
-        max-width: 95%;
-        max-height: 84vh;
+        max-width: 70%;
+        max-height: 68%;
         aspect-ratio: 900 / 630;
         object-fit: contain;
         background: #090e1a;
-        box-shadow: 0 0 35px rgba(0, 229, 255, 0.25);
+        box-shadow: 0 0 25px rgba(0, 229, 255, 0.3), 0 0 10px rgba(0, 0, 0, 0.9);
+        border: 2px solid rgba(0, 229, 255, 0.45);
+        border-radius: 10px;
+        z-index: 10;
+        position: relative;
     }}
 
     /* =========================================================================
@@ -492,16 +496,16 @@ game_html = f"""
         right: 14px;
         z-index: 500;
         display: flex;
-        gap: 10px;
+        gap: 8px;
     }}
     .corner-btn {{
-        width: 44px;
-        height: 44px;
+        width: 40px;
+        height: 40px;
         border-radius: 50%;
         background: rgba(15, 23, 42, 0.88);
         border: 2px solid #00e5ff;
         color: #00e5ff;
-        font-size: 1.25rem;
+        font-size: 1.15rem;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -527,7 +531,7 @@ game_html = f"""
         height: 100% !important;
         background: rgba(6, 9, 17, 0.92);
         backdrop-filter: blur(10px);
-        z-index: 1000;
+        z-index: 1100;
         display: none;
         align-items: center;
         justify-content: center;
@@ -538,23 +542,23 @@ game_html = f"""
         background: #0f172a;
         border: 2px solid #00e5ff;
         border-radius: 16px;
-        padding: 24px 20px;
+        padding: 22px 18px;
         box-shadow: 0 0 40px rgba(0, 229, 255, 0.4);
         display: flex;
         flex-direction: column;
-        gap: 14px;
+        gap: 12px;
         text-align: center;
     }}
     .settings-title {{
-        font-size: 1.5rem;
+        font-size: 1.4rem;
         font-weight: 800;
         color: #ffd700;
         letter-spacing: 1.5px;
     }}
     .settings-btn {{
-        padding: 14px 16px;
+        padding: 12px 14px;
         border-radius: 10px;
-        font-size: 1.05rem;
+        font-size: 1rem;
         font-weight: bold;
         cursor: pointer;
         display: flex;
@@ -577,6 +581,11 @@ game_html = f"""
         border: 2px solid #ffd700;
         color: #ffd700;
     }}
+    .btn-profile {{
+        background: #1e293b;
+        border: 2px solid #00e5ff;
+        color: #00e5ff;
+    }}
     .btn-close {{
         background: linear-gradient(135deg, #00e5ff, #0077b6);
         border: none;
@@ -589,41 +598,170 @@ game_html = f"""
     }}
 
     /* =========================================================================
+       🎓 IN-GAME STUDENT REGISTRATION MODAL
+       ========================================================================= */
+    #registration-modal {{
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100% !important;
+        height: 100% !important;
+        background: rgba(6, 9, 17, 0.94);
+        backdrop-filter: blur(12px);
+        z-index: 1200;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px;
+    }}
+    .reg-card {{
+        width: 95%;
+        max-width: 660px;
+        max-height: 94%;
+        overflow-y: auto;
+        background: #0f172a;
+        border: 2px solid #00e5ff;
+        border-radius: 14px;
+        padding: 12px 18px;
+        box-shadow: 0 0 35px rgba(0, 229, 255, 0.4), 0 0 100px rgba(0, 0, 0, 0.9);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }}
+    .reg-header {{
+        text-align: center;
+    }}
+    .reg-badge {{
+        display: inline-block;
+        font-size: 0.65rem;
+        font-weight: 800;
+        background: rgba(0, 229, 255, 0.15);
+        color: #00e5ff;
+        border: 1px solid #00e5ff;
+        padding: 2px 8px;
+        border-radius: 12px;
+        letter-spacing: 1px;
+    }}
+    .reg-title {{
+        font-size: 1.2rem;
+        font-weight: 900;
+        color: #ffd700;
+        letter-spacing: 1.2px;
+        margin-top: 2px;
+    }}
+    .reg-sub {{
+        font-size: 0.72rem;
+        color: #94a3b8;
+    }}
+    .reg-body {{
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        align-items: stretch;
+    }}
+    @media (max-width: 580px) {{
+        .reg-body {{
+            grid-template-columns: 1fr;
+        }}
+    }}
+    .reg-col {{
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }}
+    .reg-roster-col {{
+        justify-content: space-between;
+    }}
+    .reg-field {{
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }}
+    .reg-field label {{
+        font-size: 0.7rem;
+        font-weight: bold;
+        color: #00e5ff;
+        letter-spacing: 0.5px;
+    }}
+    .reg-field input, .reg-field select {{
+        background: #1e293b;
+        border: 1px solid rgba(0, 229, 255, 0.4);
+        border-radius: 6px;
+        padding: 5px 8px;
+        color: #fff;
+        font-size: 0.82rem;
+        outline: none;
+        transition: border-color 0.15s;
+    }}
+    .reg-field input:focus, .reg-field select:focus {{
+        border-color: #00e5ff;
+        box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+    }}
+    .reg-roster-box {{
+        background: rgba(15, 23, 42, 0.9);
+        border: 1px dashed rgba(255, 215, 0, 0.5);
+        border-radius: 8px;
+        padding: 8px 10px;
+        font-size: 0.75rem;
+        line-height: 1.35;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 3px;
+    }}
+    .btn-start-mission {{
+        background: linear-gradient(135deg, #00e5ff, #00b4d8);
+        border: none;
+        border-radius: 8px;
+        color: #060911;
+        font-size: 0.92rem;
+        font-weight: 900;
+        padding: 9px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        box-shadow: 0 4px 15px rgba(0, 229, 255, 0.4);
+        transition: transform 0.1s, box-shadow 0.1s;
+    }}
+    .btn-start-mission:active {{
+        transform: scale(0.97);
+        background: #ffd700;
+    }}
+
+    /* =========================================================================
        🎮 FLOATING ERGONOMIC MOBILE TOUCH CONTROLS (Horizontal Landscape)
-       Ultra-translucent glassmorphic controls to keep all maze paths 100% visible
+       Positioned completely in side margins outside the puzzle canvas
        ========================================================================= */
     #mobile-controls {{
         position: absolute;
-        bottom: 6px;
+        top: 0;
         left: 0;
         width: 100% !important;
-        height: 110px;
+        height: 100% !important;
         pointer-events: none;
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-end;
-        padding: 0 12px;
         z-index: 300;
     }}
     .touch-dpad {{
+        position: absolute;
+        left: 14px;
+        bottom: 16px;
         pointer-events: auto;
         display: grid;
-        grid-template-columns: repeat(3, 38px);
+        grid-template-columns: repeat(3, 36px);
         grid-template-rows: repeat(3, 34px);
         gap: 2px;
-        background: rgba(6, 9, 17, 0.28);
-        border: 1px solid rgba(0, 229, 255, 0.3);
+        background: rgba(6, 9, 17, 0.45);
+        border: 1px solid rgba(0, 229, 255, 0.35);
         border-radius: 12px;
-        padding: 3px;
-        backdrop-filter: blur(4px);
-        opacity: 0.55;
-        transition: opacity 0.15s ease;
-    }}
-    .touch-dpad:active, .touch-dpad:focus-within {{
-        opacity: 0.92;
+        padding: 4px;
+        backdrop-filter: blur(6px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
     }}
     .dpad-key {{
-        background: rgba(15, 23, 42, 0.4);
+        background: rgba(15, 23, 42, 0.6);
         border: 1px solid rgba(0, 229, 255, 0.35);
         border-radius: 6px;
         color: #00e5ff;
@@ -635,52 +773,39 @@ game_html = f"""
         cursor: pointer;
     }}
     .dpad-key:active {{
-        background: rgba(0, 229, 255, 0.7);
+        background: rgba(0, 229, 255, 0.75);
         color: #060911;
         transform: scale(0.92);
     }}
     .sprint-touch-container {{
+        position: absolute;
+        right: 18px;
+        bottom: 20px;
         pointer-events: auto;
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 2px;
     }}
     .touch-sprint-btn {{
-        width: 66px;
-        height: 66px;
+        width: 62px;
+        height: 62px;
         border-radius: 50%;
-        background: linear-gradient(135deg, rgba(255, 71, 87, 0.45), rgba(255, 107, 129, 0.45));
-        border: 2px solid rgba(255, 71, 87, 0.65);
+        background: linear-gradient(135deg, rgba(255, 71, 87, 0.75), rgba(255, 107, 129, 0.75));
+        border: 2px solid rgba(255, 71, 87, 0.9);
         color: white;
-        font-size: 0.85rem;
+        font-size: 0.8rem;
         font-weight: 900;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 4px 15px rgba(255, 71, 87, 0.25);
+        box-shadow: 0 4px 18px rgba(255, 71, 87, 0.4);
         cursor: pointer;
-        backdrop-filter: blur(4px);
-        opacity: 0.55;
-        transition: opacity 0.15s ease, transform 0.1s ease;
+        backdrop-filter: blur(6px);
+        transition: transform 0.1s ease;
     }}
     .touch-sprint-btn:active {{
-        opacity: 0.95;
         transform: scale(0.92);
-        background: #ff4757;
-    }}
-        font-weight: 900;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 4px 20px rgba(255, 71, 87, 0.4);
-        cursor: pointer;
-        backdrop-filter: blur(8px);
-    }}
-    .touch-sprint-btn:active {{
-        transform: scale(0.9);
         background: #ff4757;
     }}
 </style>
@@ -688,7 +813,7 @@ game_html = f"""
 <body>
 
 <div id="game-container">
-    <!-- Main Fullscreen Game Canvas -->
+    <!-- Main Scaled Game Canvas (Roomy margins, no congestion) -->
     <canvas id="gameCanvas" width="900" height="630"></canvas>
 
     <!-- Upper Right Corner Controls: Pause in one, Settings in other -->
@@ -697,9 +822,9 @@ game_html = f"""
         <button class="corner-btn" id="btn-settings" title="Settings (Sound & Restart Level)">⚙️</button>
     </div>
 
-    <!-- Ergonomic On-Screen Touch Controls (Mobile Horizontal) -->
+    <!-- Ergonomic On-Screen Touch Controls (Mobile Horizontal in Side Margins) -->
     <div id="mobile-controls">
-        <!-- Left Thumb: D-Pad -->
+        <!-- Left Margin: D-Pad -->
         <div class="touch-dpad">
             <div></div>
             <div class="dpad-key" id="k-up">▲</div>
@@ -712,16 +837,76 @@ game_html = f"""
             <div></div>
         </div>
 
-        <!-- Right Thumb: Sprint Button -->
+        <!-- Right Margin: Sprint Button -->
         <div class="sprint-touch-container">
             <button class="touch-sprint-btn" id="k-sprint">
                 <span>⚡</span>
-                <span style="font-size: 0.75rem; letter-spacing: 0.5px;">SPRINT</span>
+                <span style="font-size: 0.72rem; letter-spacing: 0.5px;">SPRINT</span>
             </button>
         </div>
     </div>
 
-    <!-- ⚙️ SETTINGS MODAL: Sound and Restart in One Place -->
+    <!-- 🎓 STUDENT ADMISSION & BUNK PROFILE MODAL (Asks Name, Roll, Dept, Sem upon start) -->
+    <div id="registration-modal">
+        <div class="reg-card">
+            <div class="reg-header">
+                <div class="reg-badge">🎓 ADMISSION FORM</div>
+                <div class="reg-title">COLLEGE BUNK SIMULATOR</div>
+                <div class="reg-sub">Configure your student profile & deploy departmental faculty</div>
+            </div>
+
+            <div class="reg-body">
+                <div class="reg-col">
+                    <div class="reg-field">
+                        <label for="reg-name">👤 STUDENT NAME</label>
+                        <input type="text" id="reg-name" value="Yash Chauhan" placeholder="Enter student name..." maxlength="25">
+                    </div>
+                    <div class="reg-field">
+                        <label for="reg-roll">🔢 ROLL NUMBER</label>
+                        <input type="text" id="reg-roll" value="21BCSE101" placeholder="Enter roll number..." maxlength="20">
+                    </div>
+                    <div class="reg-field">
+                        <label for="reg-dept">🏢 DEPARTMENT / BRANCH</label>
+                        <select id="reg-dept">
+                            <option value="CSE" selected>CSE - Computer Science & Engg</option>
+                            <option value="CSIT">CSIT - Computer Science & Info Tech</option>
+                            <option value="CSE(AI & ML)">CSE (AI & Machine Learning)</option>
+                            <option value="CSE(IOT & CS)">CSE (IoT & Cyber Security)</option>
+                            <option value="ECE">ECE - Electronics & Comm</option>
+                            <option value="ECS">ECS - Electronics & Computer Sci</option>
+                            <option value="ME">ME - Mechanical Engineering</option>
+                            <option value="RA">RA - Robotics & Automation</option>
+                            <option value="ASH">ASH - Applied Sciences & Humanities</option>
+                        </select>
+                    </div>
+                    <div class="reg-field">
+                        <label for="reg-sem">📅 SEMESTER</label>
+                        <select id="reg-sem">
+                            <option value="1">Semester 1 (1st Year)</option>
+                            <option value="2">Semester 2 (1st Year)</option>
+                            <option value="3">Semester 3 (2nd Year)</option>
+                            <option value="4" selected>Semester 4 (2nd Year)</option>
+                            <option value="5">Semester 5 (3rd Year)</option>
+                            <option value="6">Semester 6 (3rd Year)</option>
+                            <option value="7">Semester 7 (4th Year)</option>
+                            <option value="8">Semester 8 (4th Year)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="reg-col reg-roster-col">
+                    <div id="reg-roster-preview" class="reg-roster-box">
+                        <!-- Filled by updateRosterPreview() -->
+                    </div>
+                    <button class="btn-start-mission" id="btn-start-game">
+                        <span>🚀 START BUNK MISSION</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ⚙️ SETTINGS MODAL: Sound, Restart & Change Profile in One Place -->
     <div id="settings-modal">
         <div class="settings-card">
             <div class="settings-title">⚙️ GAME SETTINGS</div>
@@ -732,6 +917,10 @@ game_html = f"""
             <button class="settings-btn btn-restart" id="modal-restart">
                 <span>🔄</span>
                 <span>RESTART CURRENT LEVEL</span>
+            </button>
+            <button class="settings-btn btn-profile" id="modal-profile">
+                <span>🎓</span>
+                <span>CHANGE PROFILE / BRANCH</span>
             </button>
             <button class="settings-btn btn-close" id="modal-close">
                 <span>✕ RESUME GAME</span>
@@ -821,6 +1010,14 @@ window.addEventListener("resize", updateOrientation);
 window.addEventListener("orientationchange", updateOrientation);
 updateOrientation();
 
+// Apply college Snapchat background to #game-container with cyber vignette
+if (CONFIG.background) {{
+    gameContainer.style.backgroundImage = `radial-gradient(circle at center, rgba(6, 9, 17, 0.68) 0%, rgba(6, 9, 17, 0.94) 100%), url("${{CONFIG.background}}")`;
+    gameContainer.style.backgroundPosition = "center center";
+    gameContainer.style.backgroundSize = "cover";
+    gameContainer.style.backgroundRepeat = "no-repeat";
+}}
+
 // ==============================================================================
 // 👑 UPPER RIGHT CORNER & SETTINGS MODAL (Pause in one, Settings in other)
 // ==============================================================================
@@ -831,7 +1028,100 @@ const modalSound = document.getElementById("modal-sound");
 const soundIcon = document.getElementById("sound-icon");
 const soundText = document.getElementById("sound-text");
 const modalRestart = document.getElementById("modal-restart");
+const modalProfile = document.getElementById("modal-profile");
 const modalClose = document.getElementById("modal-close");
+
+// Registration Modal Elements
+const regModal = document.getElementById("registration-modal");
+const regNameInput = document.getElementById("reg-name");
+const regRollInput = document.getElementById("reg-roll");
+const regDeptSelect = document.getElementById("reg-dept");
+const regSemSelect = document.getElementById("reg-sem");
+const btnStartGame = document.getElementById("btn-start-game");
+
+function updateRosterPreview() {{
+    if (!regDeptSelect || !regSemSelect) return;
+    const dept = regDeptSelect.value;
+    const sem = parseInt(regSemSelect.value, 10);
+    let hodName = "";
+    let teachers = [];
+    let notice = "";
+
+    if (sem === 1 || sem === 2) {{
+        hodName = "Pooja Sharma (ASH HOD)";
+        teachers = (CONFIG.faculty_roster && CONFIG.faculty_roster["ASH"]) ? CONFIG.faculty_roster["ASH"].teachers : ["Vaishali Dixit", "Ashok Kumar", "Pooja Jain"];
+        notice = "⚡ 1st Year: Common Applied Sciences Wing under Pooja Sharma (HOD)!";
+    }} else {{
+        const d = (CONFIG.faculty_roster && CONFIG.faculty_roster[dept]) ? CONFIG.faculty_roster[dept] : CONFIG.faculty_roster["CSE"];
+        hodName = d.hod;
+        teachers = d.teachers;
+        notice = `⚡ Core Branch: Patrolled by ${{dept}} Department Faculty!`;
+    }}
+
+    const previewEl = document.getElementById("reg-roster-preview");
+    if (previewEl) {{
+        previewEl.innerHTML = `
+            <div style="font-weight: 800; color: #ffd700; font-size: 0.82rem; letter-spacing: 0.5px;">🚨 CAMPUS HUNTER DEPLOYMENT</div>
+            <div style="font-size: 0.72rem; color: #a5b4fc; margin-bottom: 2px;">${{notice}}</div>
+            <div style="color: #ff6b81; font-size: 0.78rem;"><strong>👑 HOD:</strong> <span style="color:#fff;">${{hodName}}</span></div>
+            <div style="color: #00e5ff; font-size: 0.78rem;"><strong>📚 Faculty:</strong> <span style="color:#fff;">${{teachers.join(", ")}}</span></div>
+            <div style="color: #f1c40f; font-size: 0.74rem;"><strong>🛡️ Gates:</strong> Campus Security & Sonu Bouncer | <strong>Boss:</strong> Principal Isha Malhotra</div>
+        `;
+    }}
+}}
+
+if (regDeptSelect) regDeptSelect.addEventListener("change", updateRosterPreview);
+if (regSemSelect) regSemSelect.addEventListener("change", updateRosterPreview);
+updateRosterPreview();
+
+function openRegistrationModal() {{
+    gameState = "REGISTRATION";
+    btnPause.innerText = "▶️";
+    if (regNameInput) regNameInput.value = CONFIG.student_name;
+    if (regRollInput) regRollInput.value = CONFIG.student_roll;
+    if (regDeptSelect) regDeptSelect.value = CONFIG.student_dept;
+    if (regSemSelect) regSemSelect.value = CONFIG.student_sem;
+    updateRosterPreview();
+    if (regModal) regModal.style.display = "flex";
+}}
+
+if (btnStartGame) {{
+    const startAction = (e) => {{
+        if (e) {{ e.preventDefault(); e.stopPropagation(); }}
+        initAudio();
+        const enteredName = (regNameInput && regNameInput.value.trim()) ? regNameInput.value.trim() : "Student";
+        const enteredRoll = (regRollInput && regRollInput.value.trim()) ? regRollInput.value.trim() : "Roll 01";
+        const enteredDept = regDeptSelect ? regDeptSelect.value : "CSE";
+        const enteredSem = regSemSelect ? parseInt(regSemSelect.value, 10) : 4;
+
+        CONFIG.student_name = enteredName;
+        CONFIG.student_roll = enteredRoll;
+        CONFIG.student_dept = enteredDept;
+        CONFIG.student_sem = enteredSem;
+
+        studentAvatar = createStudentAvatar(CONFIG.student_name, 28);
+        currentLevel = 0;
+        lives = 3;
+        totalScore = 0;
+        gameStartTime = Date.now();
+        levelStartTime = Date.now();
+        initLevel(0);
+
+        if (regModal) regModal.style.display = "none";
+        gameState = "PLAYING";
+        btnPause.innerText = "⏸️";
+    }};
+    btnStartGame.addEventListener("click", startAction);
+    btnStartGame.addEventListener("touchend", startAction);
+}}
+
+const handleEnter = (e) => {{
+    if (e.key === "Enter") {{
+        if (btnStartGame) btnStartGame.click();
+    }}
+}};
+if (regNameInput) regNameInput.addEventListener("keydown", handleEnter);
+if (regRollInput) regRollInput.addEventListener("keydown", handleEnter);
 
 btnPause.addEventListener("click", () => {{
     initAudio();
@@ -871,6 +1161,13 @@ modalRestart.addEventListener("click", () => {{
     retryLevel();
     btnPause.innerText = "⏸️";
 }});
+
+if (modalProfile) {{
+    modalProfile.addEventListener("click", () => {{
+        settingsModal.style.display = "none";
+        openRegistrationModal();
+    }});
+}}
 
 modalClose.addEventListener("click", () => {{
     settingsModal.style.display = "none";
@@ -1272,7 +1569,7 @@ function getGuardsForLevel(dept, sem, lvlIdx) {{
 let currentLevel = 0;
 let lives = 3;
 let totalScore = 0;
-let gameState = "PLAYING"; // PLAYING, PAUSED, LEVEL_CLEAR, GAME_OVER, VICTORY
+let gameState = "REGISTRATION"; // REGISTRATION on startup, PLAYING, PAUSED, LEVEL_CLEAR, GAME_OVER, VICTORY
 let gameStartTime = Date.now();
 let levelStartTime = Date.now();
 
@@ -1292,7 +1589,7 @@ let bannerTimer = 1.0;
 let caughtByTeacher = "Faculty";
 let winData = null;
 
-const studentAvatar = createStudentAvatar(CONFIG.student_name, 28);
+let studentAvatar = createStudentAvatar(CONFIG.student_name, 28);
 
 function initLevel(lvlIdx) {{
     const lvl = CONFIG.levels[lvlIdx];
@@ -1335,6 +1632,9 @@ preloadAllPhotos(() => {{
 // Keyboard bindings
 const keys = {{}};
 window.addEventListener("keydown", (e) => {{
+    if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "SELECT")) {{
+        return;
+    }}
     initAudio();
     keys[e.key.toLowerCase()] = true;
     if (e.key === "p" || e.key === "P" || e.key === "Escape") {{
@@ -1431,9 +1731,7 @@ function resetGame() {{
     currentLevel = 0;
     lives = 3;
     totalScore = 0;
-    gameState = "PLAYING";
-    gameStartTime = Date.now();
-    initLevel(0);
+    openRegistrationModal();
 }}
 
 // ==============================================================================
