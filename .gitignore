@@ -1,0 +1,23 @@
+# Photos & Images (Private / Local only - never pushed to GitHub)
+*.jpeg
+*.jpg
+*.png
+*.gif
+*.webp
+*.bmp
+*.ico
+assets/
+
+# Python Cache & Environments
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+venv/
+
+# Editor & System Files
+.qodo/
+.DS_Store
+Thumbs.db
+*.log
