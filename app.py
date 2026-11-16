@@ -429,7 +429,7 @@ game_html = f"""
     }}
 
     /* =========================================================================
-       📱 AUTOMATIC FULLSCREEN HORIZONTAL LAYOUT (NO ASKING / NO POPUP)
+       📱 UNIVERSAL FULLSCREEN RESPONSIVE ENGINE (Landscape & Portrait Native)
        ========================================================================= */
     #game-container {{
         position: fixed !important;
@@ -438,55 +438,99 @@ game_html = f"""
         width: 100vw !important;
         height: 100vh !important;
         display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        background: #060911 !important;
+        background-color: #060911 !important;
         overflow: hidden !important;
-        transform-origin: center center !important;
         user-select: none;
         -webkit-user-select: none;
         touch-action: none;
     }}
 
-    /* Automatic 90-degree Horizontal Rotation in Portrait (Zero popups / dont ask) */
-    @media screen and (orientation: portrait) {{
+    /* 🌅 LANDSCAPE MODE (Wide screens or phone held horizontally) */
+    @media screen and (orientation: landscape) {{
         #game-container {{
-            top: 50% !important;
-            left: 50% !important;
-            width: 100vh !important;
-            height: 100vw !important;
-            transform: translate(-50%, -50%) rotate(90deg) !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }}
+        canvas {{
+            display: block;
+            max-width: 72vw;
+            max-height: 72vh;
+            aspect-ratio: 900 / 630;
+            object-fit: contain;
+            background: #090e1a;
+            box-shadow: 0 0 25px rgba(0, 229, 255, 0.3), 0 0 10px rgba(0, 0, 0, 0.9);
+            border: 2px solid rgba(0, 229, 255, 0.45);
+            border-radius: 10px;
+            z-index: 10;
+            position: relative;
+        }}
+        #mobile-controls {{
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100% !important;
+            height: 100% !important;
+            pointer-events: none;
+            z-index: 300;
+        }}
+        .touch-dpad {{
+            position: absolute;
+            left: 14px;
+            bottom: 16px;
+            pointer-events: auto;
+        }}
+        .sprint-touch-container {{
+            position: absolute;
+            right: 18px;
+            bottom: 20px;
+            pointer-events: auto;
         }}
     }}
 
-    /* Dynamic JS class fallback for 100% reliable auto-rotation */
-    #game-container.mode-portrait {{
-        top: 50% !important;
-        left: 50% !important;
-        width: 100vh !important;
-        height: 100vw !important;
-        transform: translate(-50%, -50%) rotate(90deg) !important;
-    }}
-    #game-container.mode-landscape {{
-        top: 0 !important;
-        left: 0 !important;
-        width: 100vw !important;
-        height: 100vh !important;
-        transform: none !important;
-    }}
-
-    canvas {{
-        display: block;
-        max-width: 70%;
-        max-height: 68%;
-        aspect-ratio: 900 / 630;
-        object-fit: contain;
-        background: #090e1a;
-        box-shadow: 0 0 25px rgba(0, 229, 255, 0.3), 0 0 10px rgba(0, 0, 0, 0.9);
-        border: 2px solid rgba(0, 229, 255, 0.45);
-        border-radius: 10px;
-        z-index: 10;
-        position: relative;
+    /* 📱 PORTRAIT MODE (Phone held vertically - zero neck strain, GameBoy style) */
+    @media screen and (orientation: portrait) {{
+        #game-container {{
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: flex-start !important;
+            padding-top: 52px;
+        }}
+        canvas {{
+            display: block;
+            width: 95vw !important;
+            max-width: 440px !important;
+            aspect-ratio: 900 / 630;
+            object-fit: contain;
+            background: #090e1a;
+            box-shadow: 0 0 25px rgba(0, 229, 255, 0.3), 0 0 10px rgba(0, 0, 0, 0.9);
+            border: 2px solid rgba(0, 229, 255, 0.45);
+            border-radius: 10px;
+            z-index: 10;
+            position: relative;
+        }}
+        #mobile-controls {{
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 100% !important;
+            height: calc(100vh - 66vw - 60px) !important;
+            min-height: 180px;
+            pointer-events: none;
+            z-index: 300;
+        }}
+        .touch-dpad {{
+            position: absolute;
+            left: 20px;
+            bottom: 24px;
+            pointer-events: auto;
+        }}
+        .sprint-touch-container {{
+            position: absolute;
+            right: 24px;
+            bottom: 28px;
+            pointer-events: auto;
+        }}
     }}
 
     /* =========================================================================
@@ -1071,114 +1115,6 @@ const modalRestart = document.getElementById("modal-restart");
 const modalProfile = document.getElementById("modal-profile");
 const modalClose = document.getElementById("modal-close");
 
-// Registration Modal Elements
-const regModal = document.getElementById("registration-modal");
-const regNameInput = document.getElementById("reg-name");
-const regRollInput = document.getElementById("reg-roll");
-const regDeptSelect = document.getElementById("reg-dept");
-const regSemSelect = document.getElementById("reg-sem");
-const btnStartGame = document.getElementById("btn-start-game");
-
-function updateRosterPreview() {{
-    if (!regDeptSelect || !regSemSelect) return;
-    const dept = regDeptSelect.value;
-    const sem = parseInt(regSemSelect.value, 10);
-    let hodName = "";
-    let teachers = [];
-    let notice = "";
-
-    if (sem === 1 || sem === 2) {{
-        hodName = "Pooja Sharma (ASH HOD)";
-        teachers = (CONFIG.faculty_roster && CONFIG.faculty_roster["ASH"]) ? CONFIG.faculty_roster["ASH"].teachers : ["Vaishali Dixit", "Ashok Kumar", "Pooja Jain"];
-        notice = "⚡ 1st Year: Common Applied Sciences Wing under Pooja Sharma (HOD)!";
-    }} else {{
-        const d = (CONFIG.faculty_roster && CONFIG.faculty_roster[dept]) ? CONFIG.faculty_roster[dept] : CONFIG.faculty_roster["CSE"];
-        hodName = d.hod;
-        teachers = d.teachers;
-        notice = `⚡ Core Branch: Patrolled by ${{dept}} Department Faculty!`;
-    }}
-
-    const previewEl = document.getElementById("reg-roster-preview");
-    if (previewEl) {{
-        previewEl.innerHTML = `
-            <div style="font-weight: 800; color: #ffd700; font-size: 0.82rem; letter-spacing: 0.5px;">🚨 CAMPUS HUNTER DEPLOYMENT</div>
-            <div style="font-size: 0.72rem; color: #a5b4fc; margin-bottom: 2px;">${{notice}}</div>
-            <div style="color: #ff6b81; font-size: 0.78rem;"><strong>👑 HOD:</strong> <span style="color:#fff;">${{hodName}}</span></div>
-            <div style="color: #00e5ff; font-size: 0.78rem;"><strong>📚 Faculty:</strong> <span style="color:#fff;">${{teachers.join(", ")}}</span></div>
-            <div style="color: #f1c40f; font-size: 0.74rem;"><strong>🛡️ Gates:</strong> Campus Security & Sonu Bouncer | <strong>Boss:</strong> Principal Isha Malhotra</div>
-        `;
-    }}
-}}
-
-if (regDeptSelect) regDeptSelect.addEventListener("change", updateRosterPreview);
-if (regSemSelect) regSemSelect.addEventListener("change", updateRosterPreview);
-updateRosterPreview();
-
-// Ensure clean empty fields on startup (no autofill)
-if (regNameInput) regNameInput.value = "";
-if (regRollInput) regRollInput.value = "";
-
-function openRegistrationModal() {{
-    gameState = "REGISTRATION";
-    btnPause.innerText = "▶️";
-    if (regNameInput) regNameInput.value = (CONFIG.student_name && CONFIG.student_name !== "Student") ? CONFIG.student_name : "";
-    if (regRollInput) regRollInput.value = (CONFIG.student_roll && CONFIG.student_roll !== "Roll 01") ? CONFIG.student_roll : "";
-    if (regDeptSelect) regDeptSelect.value = CONFIG.student_dept;
-    if (regSemSelect) regSemSelect.value = CONFIG.student_sem;
-    updateRosterPreview();
-    if (regModal) regModal.style.display = "flex";
-}}
-
-if (btnStartGame) {{
-    const startAction = (e) => {{
-        if (e) {{ e.preventDefault(); e.stopPropagation(); }}
-        initAudio();
-        const enteredName = (regNameInput && regNameInput.value.trim()) ? regNameInput.value.trim() : "Student";
-        const enteredRoll = (regRollInput && regRollInput.value.trim()) ? regRollInput.value.trim() : "Roll 01";
-        const enteredDept = regDeptSelect ? regDeptSelect.value : "CSE";
-        const enteredSem = regSemSelect ? parseInt(regSemSelect.value, 10) : 4;
-
-        CONFIG.student_name = enteredName;
-        CONFIG.student_roll = enteredRoll;
-        CONFIG.student_dept = enteredDept;
-        CONFIG.student_sem = enteredSem;
-
-        studentAvatar = createStudentAvatar(CONFIG.student_name, 28);
-        currentLevel = 0;
-        lives = 3;
-        totalScore = 0;
-        gameStartTime = Date.now();
-        levelStartTime = Date.now();
-        initLevel(0);
-
-        if (regModal) regModal.style.display = "none";
-        gameState = "PLAYING";
-        btnPause.innerText = "⏸️";
-
-        // Attempt mobile fullscreen and landscape orientation lock upon game start
-        try {{
-            if (document.documentElement.requestFullscreen) {{
-                document.documentElement.requestFullscreen().then(() => {{
-                    if (screen.orientation && screen.orientation.lock) {{
-                        screen.orientation.lock("landscape").catch(() => {{}});
-                    }}
-                }}).catch(() => {{}});
-            }}
-        }} catch(err) {{}}
-    }};
-    btnStartGame.addEventListener("click", startAction);
-    btnStartGame.addEventListener("touchend", startAction);
-}}
-
-const handleEnter = (e) => {{
-    if (e.key === "Enter") {{
-        e.preventDefault();
-        if (btnStartGame) btnStartGame.click();
-    }}
-}};
-if (regNameInput) regNameInput.addEventListener("keydown", handleEnter);
-if (regRollInput) regRollInput.addEventListener("keydown", handleEnter);
-
 btnPause.addEventListener("click", () => {{
     initAudio();
     if (gameState === "PLAYING") {{
@@ -1684,6 +1620,120 @@ preloadAllPhotos(() => {{
         }});
     }}
 }});
+
+// ==============================================================================
+// 🎓 STUDENT ADMISSION & BUNK PROFILE REGISTRATION
+// ==============================================================================
+const regModal = document.getElementById("registration-modal");
+const regNameInput = document.getElementById("reg-name");
+const regRollInput = document.getElementById("reg-roll");
+const regDeptSelect = document.getElementById("reg-dept");
+const regSemSelect = document.getElementById("reg-sem");
+const btnStartGame = document.getElementById("btn-start-game");
+
+function updateRosterPreview() {{
+    if (!regDeptSelect || !regSemSelect) return;
+    const dept = regDeptSelect.value;
+    const sem = parseInt(regSemSelect.value, 10);
+    let hodName = "";
+    let teachers = [];
+    let notice = "";
+
+    if (sem === 1 || sem === 2) {{
+        hodName = "Pooja Sharma (ASH HOD)";
+        teachers = (CONFIG.faculty_roster && CONFIG.faculty_roster["ASH"]) ? CONFIG.faculty_roster["ASH"].teachers : ["Vaishali Dixit", "Ashok Kumar", "Pooja Jain"];
+        notice = "⚡ 1st Year: Common Applied Sciences Wing under Pooja Sharma (HOD)!";
+    }} else {{
+        const d = (CONFIG.faculty_roster && CONFIG.faculty_roster[dept]) ? CONFIG.faculty_roster[dept] : CONFIG.faculty_roster["CSE"];
+        hodName = d.hod;
+        teachers = d.teachers;
+        notice = `⚡ Core Branch: Patrolled by ${{dept}} Department Faculty!`;
+    }}
+
+    const previewEl = document.getElementById("reg-roster-preview");
+    if (previewEl) {{
+        previewEl.innerHTML = `
+            <div style="font-weight: 800; color: #ffd700; font-size: 0.82rem; letter-spacing: 0.5px;">🚨 CAMPUS HUNTER DEPLOYMENT</div>
+            <div style="font-size: 0.72rem; color: #a5b4fc; margin-bottom: 2px;">${{notice}}</div>
+            <div style="color: #ff6b81; font-size: 0.78rem;"><strong>👑 HOD:</strong> <span style="color:#fff;">${{hodName}}</span></div>
+            <div style="color: #00e5ff; font-size: 0.78rem;"><strong>📚 Faculty:</strong> <span style="color:#fff;">${{teachers.join(", ")}}</span></div>
+            <div style="color: #f1c40f; font-size: 0.74rem;"><strong>🛡️ Gates:</strong> Campus Security & Sonu Bouncer | <strong>Boss:</strong> Principal Isha Malhotra</div>
+        `;
+    }}
+}}
+
+if (regDeptSelect) regDeptSelect.addEventListener("change", updateRosterPreview);
+if (regSemSelect) regSemSelect.addEventListener("change", updateRosterPreview);
+updateRosterPreview();
+
+// Blank initial values so user doesn't have to backspace autofill
+if (regNameInput) regNameInput.value = "";
+if (regRollInput) regRollInput.value = "";
+
+function openRegistrationModal() {{
+    gameState = "REGISTRATION";
+    btnPause.innerText = "▶️";
+    if (regNameInput) regNameInput.value = (CONFIG.student_name && CONFIG.student_name !== "Student") ? CONFIG.student_name : "";
+    if (regRollInput) regRollInput.value = (CONFIG.student_roll && CONFIG.student_roll !== "Roll 01") ? CONFIG.student_roll : "";
+    if (regDeptSelect) regDeptSelect.value = CONFIG.student_dept;
+    if (regSemSelect) regSemSelect.value = CONFIG.student_sem;
+    updateRosterPreview();
+    if (regModal) regModal.style.display = "flex";
+}}
+
+function startGame() {{
+    initAudio();
+
+    const enteredName = (regNameInput && regNameInput.value.trim()) ? regNameInput.value.trim() : "Student";
+    const enteredRoll = (regRollInput && regRollInput.value.trim()) ? regRollInput.value.trim() : "Roll 01";
+    const enteredDept = regDeptSelect ? regDeptSelect.value : "CSE";
+    const enteredSem = regSemSelect ? parseInt(regSemSelect.value, 10) : 4;
+
+    CONFIG.student_name = enteredName;
+    CONFIG.student_roll = enteredRoll;
+    CONFIG.student_dept = enteredDept;
+    CONFIG.student_sem = enteredSem;
+
+    studentAvatar = createStudentAvatar(CONFIG.student_name, 28);
+    currentLevel = 0;
+    lives = 3;
+    totalScore = 0;
+    gameStartTime = Date.now();
+    levelStartTime = Date.now();
+    initLevel(0);
+
+    if (regModal) {{
+        regModal.style.display = "none";
+    }}
+    gameState = "PLAYING";
+    btnPause.innerText = "⏸️";
+}}
+
+if (btnStartGame) {{
+    btnStartGame.onclick = function(e) {{
+        if (e) {{
+            e.preventDefault();
+            e.stopPropagation();
+        }}
+        startGame();
+    }};
+    btnStartGame.ontouchend = function(e) {{
+        if (e) {{
+            e.preventDefault();
+            e.stopPropagation();
+        }}
+        startGame();
+    }};
+}}
+
+const handleEnter = (e) => {{
+    if (e.key === "Enter") {{
+        e.preventDefault();
+        startGame();
+    }}
+}};
+if (regNameInput) regNameInput.addEventListener("keydown", handleEnter);
+if (regRollInput) regRollInput.addEventListener("keydown", handleEnter);
 
 // Keyboard bindings
 const keys = {{}};
