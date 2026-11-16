@@ -429,7 +429,7 @@ game_html = f"""
     }}
 
     /* =========================================================================
-       📱 UNIVERSAL FULLSCREEN RESPONSIVE ENGINE (Landscape & Portrait Native)
+       📱 AUTOMATIC FULLSCREEN HORIZONTAL SCREEN (Large Immersive Landscape View)
        ========================================================================= */
     #game-container {{
         position: fixed !important;
@@ -438,99 +438,55 @@ game_html = f"""
         width: 100vw !important;
         height: 100vh !important;
         display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
         background-color: #060911 !important;
         overflow: hidden !important;
+        transform-origin: center center !important;
         user-select: none;
         -webkit-user-select: none;
         touch-action: none;
     }}
 
-    /* 🌅 LANDSCAPE MODE (Wide screens or phone held horizontally) */
-    @media screen and (orientation: landscape) {{
+    /* Auto 90-degree Horizontal Rotation in Portrait (Zero popups / dont ask) */
+    @media screen and (orientation: portrait) {{
         #game-container {{
-            flex-direction: row !important;
-            align-items: center !important;
-            justify-content: center !important;
-        }}
-        canvas {{
-            display: block;
-            max-width: 72vw;
-            max-height: 72vh;
-            aspect-ratio: 900 / 630;
-            object-fit: contain;
-            background: #090e1a;
-            box-shadow: 0 0 25px rgba(0, 229, 255, 0.3), 0 0 10px rgba(0, 0, 0, 0.9);
-            border: 2px solid rgba(0, 229, 255, 0.45);
-            border-radius: 10px;
-            z-index: 10;
-            position: relative;
-        }}
-        #mobile-controls {{
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100% !important;
-            height: 100% !important;
-            pointer-events: none;
-            z-index: 300;
-        }}
-        .touch-dpad {{
-            position: absolute;
-            left: 14px;
-            bottom: 16px;
-            pointer-events: auto;
-        }}
-        .sprint-touch-container {{
-            position: absolute;
-            right: 18px;
-            bottom: 20px;
-            pointer-events: auto;
+            top: 50% !important;
+            left: 50% !important;
+            width: 100vh !important;
+            height: 100vw !important;
+            transform: translate(-50%, -50%) rotate(90deg) !important;
         }}
     }}
 
-    /* 📱 PORTRAIT MODE (Phone held vertically - zero neck strain, GameBoy style) */
-    @media screen and (orientation: portrait) {{
-        #game-container {{
-            flex-direction: column !important;
-            align-items: center !important;
-            justify-content: flex-start !important;
-            padding-top: 52px;
-        }}
-        canvas {{
-            display: block;
-            width: 95vw !important;
-            max-width: 440px !important;
-            aspect-ratio: 900 / 630;
-            object-fit: contain;
-            background: #090e1a;
-            box-shadow: 0 0 25px rgba(0, 229, 255, 0.3), 0 0 10px rgba(0, 0, 0, 0.9);
-            border: 2px solid rgba(0, 229, 255, 0.45);
-            border-radius: 10px;
-            z-index: 10;
-            position: relative;
-        }}
-        #mobile-controls {{
-            position: absolute;
-            left: 0;
-            bottom: 0;
-            width: 100% !important;
-            height: calc(100vh - 66vw - 60px) !important;
-            min-height: 180px;
-            pointer-events: none;
-            z-index: 300;
-        }}
-        .touch-dpad {{
-            position: absolute;
-            left: 20px;
-            bottom: 24px;
-            pointer-events: auto;
-        }}
-        .sprint-touch-container {{
-            position: absolute;
-            right: 24px;
-            bottom: 28px;
-            pointer-events: auto;
-        }}
+    /* Dynamic JS class fallback for 100% reliable auto-rotation */
+    #game-container.mode-portrait {{
+        top: 50% !important;
+        left: 50% !important;
+        width: 100vh !important;
+        height: 100vw !important;
+        transform: translate(-50%, -50%) rotate(90deg) !important;
+    }}
+    #game-container.mode-landscape {{
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        transform: none !important;
+    }}
+
+    canvas {{
+        display: block;
+        max-width: 95%;
+        max-height: 90%;
+        aspect-ratio: 900 / 630;
+        object-fit: contain;
+        background: #090e1a;
+        box-shadow: 0 0 35px rgba(0, 229, 255, 0.35), 0 0 10px rgba(0, 0, 0, 0.9);
+        border: 2px solid rgba(0, 229, 255, 0.45);
+        border-radius: 10px;
+        z-index: 10;
+        position: relative;
     }}
 
     /* =========================================================================
@@ -825,8 +781,8 @@ game_html = f"""
     }}
 
     /* =========================================================================
-       🎮 FLOATING ERGONOMIC MOBILE TOUCH CONTROLS (Horizontal Landscape)
-       Positioned completely in side margins outside the puzzle canvas
+       🎮 TRANSLUCENT FLOATING MOBILE CONTROLS (Horizontal Landscape)
+       Ultra-translucent glassmorphic controls to keep all maze paths 100% visible
        ========================================================================= */
     #mobile-controls {{
         position: absolute;
@@ -840,21 +796,27 @@ game_html = f"""
     .touch-dpad {{
         position: absolute;
         left: 14px;
-        bottom: 16px;
+        bottom: 14px;
         pointer-events: auto;
         display: grid;
-        grid-template-columns: repeat(3, 36px);
-        grid-template-rows: repeat(3, 34px);
+        grid-template-columns: repeat(3, 40px);
+        grid-template-rows: repeat(3, 36px);
         gap: 2px;
-        background: rgba(6, 9, 17, 0.45);
-        border: 1px solid rgba(0, 229, 255, 0.35);
+        background: rgba(6, 9, 17, 0.28);
+        border: 1px solid rgba(0, 229, 255, 0.3);
         border-radius: 12px;
-        padding: 4px;
-        backdrop-filter: blur(6px);
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        padding: 3px;
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        opacity: 0.55;
+        transition: opacity 0.15s ease;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }}
+    .touch-dpad:active, .touch-dpad:focus-within {{
+        opacity: 0.92;
     }}
     .dpad-key {{
-        background: rgba(15, 23, 42, 0.6);
+        background: rgba(15, 23, 42, 0.4);
         border: 1px solid rgba(0, 229, 255, 0.35);
         border-radius: 6px;
         color: #00e5ff;
@@ -864,40 +826,53 @@ game_html = f"""
         align-items: center;
         justify-content: center;
         cursor: pointer;
+        user-select: none;
+        -webkit-user-select: none;
+        touch-action: none;
+        -webkit-tap-highlight-color: transparent;
+        transition: background 0.1s, transform 0.08s;
     }}
     .dpad-key:active {{
-        background: rgba(0, 229, 255, 0.75);
+        background: rgba(0, 229, 255, 0.7);
         color: #060911;
         transform: scale(0.92);
     }}
     .sprint-touch-container {{
         position: absolute;
-        right: 18px;
-        bottom: 20px;
+        right: 16px;
+        bottom: 16px;
         pointer-events: auto;
         display: flex;
         flex-direction: column;
         align-items: center;
+        gap: 2px;
     }}
     .touch-sprint-btn {{
-        width: 62px;
-        height: 62px;
+        width: 66px;
+        height: 66px;
         border-radius: 50%;
-        background: linear-gradient(135deg, rgba(255, 71, 87, 0.75), rgba(255, 107, 129, 0.75));
-        border: 2px solid rgba(255, 71, 87, 0.9);
+        background: linear-gradient(135deg, rgba(255, 71, 87, 0.45), rgba(255, 107, 129, 0.45));
+        border: 2px solid rgba(255, 71, 87, 0.65);
         color: white;
-        font-size: 0.8rem;
+        font-size: 0.85rem;
         font-weight: 900;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 4px 18px rgba(255, 71, 87, 0.4);
+        box-shadow: 0 4px 15px rgba(255, 71, 87, 0.25);
         cursor: pointer;
-        backdrop-filter: blur(6px);
-        transition: transform 0.1s ease;
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        opacity: 0.55;
+        transition: opacity 0.15s ease, transform 0.1s ease;
+        user-select: none;
+        -webkit-user-select: none;
+        touch-action: none;
+        -webkit-tap-highlight-color: transparent;
     }}
     .touch-sprint-btn:active {{
+        opacity: 0.95;
         transform: scale(0.92);
         background: #ff4757;
     }}
@@ -1749,9 +1724,10 @@ function startGame() {{
         regModal.style.pointerEvents = "none";
     }}
 
-    // 5. Begin playing
+    // 5. Begin playing in horizontal screen
     gameState = "PLAYING";
     if (btnPause) btnPause.innerText = "⏸️";
+    updateOrientation();
 }}
 
 if (btnStartGame) {{
