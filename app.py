@@ -647,23 +647,30 @@ game_html = f"""
        🎓 IN-GAME STUDENT REGISTRATION MODAL (Upright, matches device orientation)
        ========================================================================= */
     #registration-modal {{
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        width: 100vw !important;
-        height: 100vh !important;
-        background: rgba(6, 9, 17, 0.96) !important;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(6, 9, 17, 0.96);
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
-        z-index: 99999 !important;
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: center !important;
-        justify-content: flex-start !important;
+        z-index: 99999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
         padding: 16px 12px;
-        overflow-y: auto !important;
-        touch-action: pan-y !important;
-        -webkit-overflow-scrolling: touch !important;
+        overflow-y: auto;
+        touch-action: pan-y;
+        -webkit-overflow-scrolling: touch;
+    }}
+    #registration-modal.modal-closed {{
+        display: none !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+        opacity: 0 !important;
+        z-index: -999 !important;
     }}
     .reg-card {{
         width: 100%;
@@ -797,7 +804,8 @@ game_html = f"""
         color: #060911;
         font-size: 1.05rem;
         font-weight: 900;
-        padding: 12px 14px;
+        padding: 14px 18px;
+        min-height: 50px;
         cursor: pointer;
         display: flex;
         align-items: center;
@@ -807,6 +815,7 @@ game_html = f"""
         touch-action: manipulation !important;
         user-select: none;
         -webkit-user-select: none;
+        -webkit-tap-highlight-color: transparent;
         transition: transform 0.1s, box-shadow 0.1s, background 0.15s;
         margin-top: 4px;
     }}
@@ -1041,9 +1050,18 @@ let audioCtx = null;
 let soundEnabled = true;
 
 function initAudio() {{
-    if (!audioCtx) {{
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        audioCtx = new AudioContext();
+    try {{
+        if (!audioCtx) {{
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            if (AudioContext) {{
+                audioCtx = new AudioContext();
+            }}
+        }}
+        if (audioCtx && audioCtx.state === "suspended") {{
+            audioCtx.resume().catch(() => {{}});
+        }}
+    }} catch (e) {{
+        console.warn("AudioContext skipped or blocked:", e);
     }}
 }}
 
@@ -1672,58 +1690,88 @@ if (regRollInput) regRollInput.value = "";
 
 function openRegistrationModal() {{
     gameState = "REGISTRATION";
-    btnPause.innerText = "▶️";
+    if (btnPause) btnPause.innerText = "▶️";
     if (regNameInput) regNameInput.value = (CONFIG.student_name && CONFIG.student_name !== "Student") ? CONFIG.student_name : "";
     if (regRollInput) regRollInput.value = (CONFIG.student_roll && CONFIG.student_roll !== "Roll 01") ? CONFIG.student_roll : "";
     if (regDeptSelect) regDeptSelect.value = CONFIG.student_dept;
     if (regSemSelect) regSemSelect.value = CONFIG.student_sem;
     updateRosterPreview();
-    if (regModal) regModal.style.display = "flex";
+    if (regModal) {{
+        regModal.classList.remove("modal-closed");
+        regModal.style.setProperty("display", "flex", "important");
+        regModal.style.visibility = "visible";
+        regModal.style.pointerEvents = "auto";
+    }}
 }}
 
 function startGame() {{
+    // 1. Dismiss mobile virtual keyboard so viewport unfreezes
+    if (document.activeElement && typeof document.activeElement.blur === "function") {{
+        try {{ document.activeElement.blur(); }} catch(bErr) {{}}
+    }}
+
+    // 2. Safe audio init
     initAudio();
 
-    const enteredName = (regNameInput && regNameInput.value.trim()) ? regNameInput.value.trim() : "Student";
-    const enteredRoll = (regRollInput && regRollInput.value.trim()) ? regRollInput.value.trim() : "Roll 01";
-    const enteredDept = regDeptSelect ? regDeptSelect.value : "CSE";
-    const enteredSem = regSemSelect ? parseInt(regSemSelect.value, 10) : 4;
+    // 3. Save student profile & configuration
+    try {{
+        const enteredName = (regNameInput && regNameInput.value.trim()) ? regNameInput.value.trim() : "Student";
+        const enteredRoll = (regRollInput && regRollInput.value.trim()) ? regRollInput.value.trim() : "Roll 01";
+        const enteredDept = regDeptSelect ? regDeptSelect.value : "CSE";
+        const enteredSem = regSemSelect ? parseInt(regSemSelect.value, 10) : 4;
 
-    CONFIG.student_name = enteredName;
-    CONFIG.student_roll = enteredRoll;
-    CONFIG.student_dept = enteredDept;
-    CONFIG.student_sem = enteredSem;
+        CONFIG.student_name = enteredName;
+        CONFIG.student_roll = enteredRoll;
+        CONFIG.student_dept = enteredDept;
+        CONFIG.student_sem = enteredSem;
 
-    studentAvatar = createStudentAvatar(CONFIG.student_name, 28);
-    currentLevel = 0;
-    lives = 3;
-    totalScore = 0;
-    gameStartTime = Date.now();
-    levelStartTime = Date.now();
-    initLevel(0);
+        try {{
+            studentAvatar = createStudentAvatar(CONFIG.student_name, 28);
+        }} catch(avErr) {{
+            console.warn("Avatar creation fallback:", avErr);
+        }}
 
-    if (regModal) {{
-        regModal.style.display = "none";
+        currentLevel = 0;
+        lives = 3;
+        totalScore = 0;
+        gameStartTime = Date.now();
+        levelStartTime = Date.now();
+        initLevel(0);
+    }} catch(cfgErr) {{
+        console.warn("Profile init warning:", cfgErr);
     }}
+
+    // 4. Force hide registration modal across all rendering engines
+    if (regModal) {{
+        regModal.classList.add("modal-closed");
+        regModal.style.setProperty("display", "none", "important");
+        regModal.style.visibility = "hidden";
+        regModal.style.pointerEvents = "none";
+    }}
+
+    // 5. Begin playing
     gameState = "PLAYING";
-    btnPause.innerText = "⏸️";
+    if (btnPause) btnPause.innerText = "⏸️";
 }}
 
 if (btnStartGame) {{
-    btnStartGame.onclick = function(e) {{
+    let triggered = false;
+    const triggerStart = function(e) {{
         if (e) {{
-            e.preventDefault();
             e.stopPropagation();
         }}
+        if (triggered && gameState === "PLAYING") return;
+        triggered = true;
         startGame();
+        setTimeout(() => {{ triggered = false; }}, 600);
     }};
-    btnStartGame.ontouchend = function(e) {{
-        if (e) {{
-            e.preventDefault();
-            e.stopPropagation();
-        }}
-        startGame();
-    }};
+
+    btnStartGame.addEventListener("click", triggerStart);
+    btnStartGame.addEventListener("pointerup", triggerStart);
+    btnStartGame.addEventListener("touchend", function(e) {{
+        if (e.cancelable) e.preventDefault();
+        triggerStart(e);
+    }}, {{ passive: false }});
 }}
 
 const handleEnter = (e) => {{
