@@ -415,9 +415,6 @@ game_html = f"""
         box-sizing: border-box;
         margin: 0;
         padding: 0;
-        user-select: none;
-        -webkit-user-select: none;
-        touch-action: none;
     }}
     html, body {{
         width: 100vw;
@@ -427,6 +424,8 @@ game_html = f"""
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         color: #fff;
         position: fixed;
+        margin: 0;
+        padding: 0;
     }}
 
     /* =========================================================================
@@ -444,6 +443,9 @@ game_html = f"""
         background: #060911 !important;
         overflow: hidden !important;
         transform-origin: center center !important;
+        user-select: none;
+        -webkit-user-select: none;
+        touch-action: none;
     }}
 
     /* Automatic 90-degree Horizontal Rotation in Portrait (Zero popups / dont ask) */
@@ -598,35 +600,65 @@ game_html = f"""
     }}
 
     /* =========================================================================
-       🎓 IN-GAME STUDENT REGISTRATION MODAL
+       🎓 IN-GAME STUDENT REGISTRATION MODAL (Upright, matches device orientation)
        ========================================================================= */
     #registration-modal {{
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100% !important;
-        height: 100% !important;
-        background: rgba(6, 9, 17, 0.94);
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        background: rgba(6, 9, 17, 0.96) !important;
         backdrop-filter: blur(12px);
-        z-index: 1200;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 8px;
+        -webkit-backdrop-filter: blur(12px);
+        z-index: 99999 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        padding: 16px 12px;
+        overflow-y: auto !important;
+        touch-action: pan-y !important;
+        -webkit-overflow-scrolling: touch !important;
     }}
     .reg-card {{
-        width: 95%;
-        max-width: 660px;
-        max-height: 94%;
-        overflow-y: auto;
+        width: 100%;
+        max-width: 500px;
+        margin: auto 0;
         background: #0f172a;
         border: 2px solid #00e5ff;
-        border-radius: 14px;
-        padding: 12px 18px;
-        box-shadow: 0 0 35px rgba(0, 229, 255, 0.4), 0 0 100px rgba(0, 0, 0, 0.9);
+        border-radius: 16px;
+        padding: 16px 18px;
+        box-shadow: 0 0 35px rgba(0, 229, 255, 0.35), 0 0 80px rgba(0, 0, 0, 0.9);
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: 10px;
+        touch-action: pan-y !important;
+    }}
+    @media screen and (min-width: 640px) and (orientation: landscape) {{
+        .reg-card {{
+            max-width: 660px;
+            padding: 14px 18px;
+            gap: 8px;
+        }}
+        .reg-body {{
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            align-items: stretch;
+        }}
+    }}
+    @media screen and (max-width: 639px), screen and (orientation: portrait) {{
+        .reg-card {{
+            max-width: 440px;
+            padding: 14px;
+            gap: 8px;
+        }}
+        .reg-body {{
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }}
     }}
     .reg-header {{
         text-align: center;
@@ -643,7 +675,7 @@ game_html = f"""
         letter-spacing: 1px;
     }}
     .reg-title {{
-        font-size: 1.2rem;
+        font-size: 1.25rem;
         font-weight: 900;
         color: #ffd700;
         letter-spacing: 1.2px;
@@ -653,49 +685,49 @@ game_html = f"""
         font-size: 0.72rem;
         color: #94a3b8;
     }}
-    .reg-body {{
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-        align-items: stretch;
-    }}
-    @media (max-width: 580px) {{
-        .reg-body {{
-            grid-template-columns: 1fr;
-        }}
-    }}
     .reg-col {{
         display: flex;
         flex-direction: column;
         gap: 6px;
     }}
     .reg-roster-col {{
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
         justify-content: space-between;
     }}
     .reg-field {{
         display: flex;
         flex-direction: column;
         gap: 2px;
+        text-align: left;
     }}
     .reg-field label {{
-        font-size: 0.7rem;
+        font-size: 0.72rem;
         font-weight: bold;
         color: #00e5ff;
         letter-spacing: 0.5px;
     }}
     .reg-field input, .reg-field select {{
         background: #1e293b;
-        border: 1px solid rgba(0, 229, 255, 0.4);
-        border-radius: 6px;
-        padding: 5px 8px;
+        border: 1.5px solid rgba(0, 229, 255, 0.4);
+        border-radius: 8px;
+        padding: 9px 12px;
         color: #fff;
-        font-size: 0.82rem;
+        font-size: 1rem;
         outline: none;
-        transition: border-color 0.15s;
+        user-select: text !important;
+        -webkit-user-select: text !important;
+        touch-action: manipulation !important;
+        transition: border-color 0.15s, box-shadow 0.15s;
     }}
     .reg-field input:focus, .reg-field select:focus {{
         border-color: #00e5ff;
-        box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+        box-shadow: 0 0 10px rgba(0, 229, 255, 0.4);
+    }}
+    .reg-field input::placeholder {{
+        color: #64748b;
+        font-style: italic;
     }}
     .reg-roster-box {{
         background: rgba(15, 23, 42, 0.9);
@@ -709,25 +741,33 @@ game_html = f"""
         flex-direction: column;
         justify-content: center;
         gap: 3px;
+        text-align: left;
     }}
     .btn-start-mission {{
+        position: sticky;
+        bottom: 0;
+        z-index: 10;
         background: linear-gradient(135deg, #00e5ff, #00b4d8);
         border: none;
-        border-radius: 8px;
+        border-radius: 10px;
         color: #060911;
-        font-size: 0.92rem;
+        font-size: 1.05rem;
         font-weight: 900;
-        padding: 9px;
+        padding: 12px 14px;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 6px;
-        box-shadow: 0 4px 15px rgba(0, 229, 255, 0.4);
-        transition: transform 0.1s, box-shadow 0.1s;
+        gap: 8px;
+        box-shadow: 0 4px 18px rgba(0, 229, 255, 0.5);
+        touch-action: manipulation !important;
+        user-select: none;
+        -webkit-user-select: none;
+        transition: transform 0.1s, box-shadow 0.1s, background 0.15s;
+        margin-top: 4px;
     }}
     .btn-start-mission:active {{
-        transform: scale(0.97);
+        transform: scale(0.96);
         background: #ffd700;
     }}
 
@@ -846,66 +886,6 @@ game_html = f"""
         </div>
     </div>
 
-    <!-- 🎓 STUDENT ADMISSION & BUNK PROFILE MODAL (Asks Name, Roll, Dept, Sem upon start) -->
-    <div id="registration-modal">
-        <div class="reg-card">
-            <div class="reg-header">
-                <div class="reg-badge">🎓 ADMISSION FORM</div>
-                <div class="reg-title">COLLEGE BUNK SIMULATOR</div>
-                <div class="reg-sub">Configure your student profile & deploy departmental faculty</div>
-            </div>
-
-            <div class="reg-body">
-                <div class="reg-col">
-                    <div class="reg-field">
-                        <label for="reg-name">👤 STUDENT NAME</label>
-                        <input type="text" id="reg-name" value="Yash Chauhan" placeholder="Enter student name..." maxlength="25">
-                    </div>
-                    <div class="reg-field">
-                        <label for="reg-roll">🔢 ROLL NUMBER</label>
-                        <input type="text" id="reg-roll" value="21BCSE101" placeholder="Enter roll number..." maxlength="20">
-                    </div>
-                    <div class="reg-field">
-                        <label for="reg-dept">🏢 DEPARTMENT / BRANCH</label>
-                        <select id="reg-dept">
-                            <option value="CSE" selected>CSE - Computer Science & Engg</option>
-                            <option value="CSIT">CSIT - Computer Science & Info Tech</option>
-                            <option value="CSE(AI & ML)">CSE (AI & Machine Learning)</option>
-                            <option value="CSE(IOT & CS)">CSE (IoT & Cyber Security)</option>
-                            <option value="ECE">ECE - Electronics & Comm</option>
-                            <option value="ECS">ECS - Electronics & Computer Sci</option>
-                            <option value="ME">ME - Mechanical Engineering</option>
-                            <option value="RA">RA - Robotics & Automation</option>
-                            <option value="ASH">ASH - Applied Sciences & Humanities</option>
-                        </select>
-                    </div>
-                    <div class="reg-field">
-                        <label for="reg-sem">📅 SEMESTER</label>
-                        <select id="reg-sem">
-                            <option value="1">Semester 1 (1st Year)</option>
-                            <option value="2">Semester 2 (1st Year)</option>
-                            <option value="3">Semester 3 (2nd Year)</option>
-                            <option value="4" selected>Semester 4 (2nd Year)</option>
-                            <option value="5">Semester 5 (3rd Year)</option>
-                            <option value="6">Semester 6 (3rd Year)</option>
-                            <option value="7">Semester 7 (4th Year)</option>
-                            <option value="8">Semester 8 (4th Year)</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="reg-col reg-roster-col">
-                    <div id="reg-roster-preview" class="reg-roster-box">
-                        <!-- Filled by updateRosterPreview() -->
-                    </div>
-                    <button class="btn-start-mission" id="btn-start-game">
-                        <span>🚀 START BUNK MISSION</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- ⚙️ SETTINGS MODAL: Sound, Restart & Change Profile in One Place -->
     <div id="settings-modal">
         <div class="settings-card">
@@ -925,6 +905,66 @@ game_html = f"""
             <button class="settings-btn btn-close" id="modal-close">
                 <span>✕ RESUME GAME</span>
             </button>
+        </div>
+    </div>
+</div>
+
+<!-- 🎓 STUDENT ADMISSION & BUNK PROFILE MODAL (Upright, matches device orientation) -->
+<div id="registration-modal">
+    <div class="reg-card">
+        <div class="reg-header">
+            <div class="reg-badge">🎓 ADMISSION FORM</div>
+            <div class="reg-title">COLLEGE BUNK SIMULATOR</div>
+            <div class="reg-sub">Configure your student profile & deploy departmental faculty</div>
+        </div>
+
+        <div class="reg-body">
+            <div class="reg-col">
+                <div class="reg-field">
+                    <label for="reg-name">👤 STUDENT NAME</label>
+                    <input type="text" id="reg-name" value="" placeholder="Enter your name..." maxlength="25" autocomplete="off">
+                </div>
+                <div class="reg-field">
+                    <label for="reg-roll">🔢 ROLL NUMBER</label>
+                    <input type="text" id="reg-roll" value="" placeholder="Enter roll number..." maxlength="20" autocomplete="off">
+                </div>
+                <div class="reg-field">
+                    <label for="reg-dept">🏢 DEPARTMENT / BRANCH</label>
+                    <select id="reg-dept">
+                        <option value="CSE" selected>CSE - Computer Science & Engg</option>
+                        <option value="CSIT">CSIT - Computer Science & Info Tech</option>
+                        <option value="CSE(AI & ML)">CSE (AI & Machine Learning)</option>
+                        <option value="CSE(IOT & CS)">CSE (IoT & Cyber Security)</option>
+                        <option value="ECE">ECE - Electronics & Comm</option>
+                        <option value="ECS">ECS - Electronics & Computer Sci</option>
+                        <option value="ME">ME - Mechanical Engineering</option>
+                        <option value="RA">RA - Robotics & Automation</option>
+                        <option value="ASH">ASH - Applied Sciences & Humanities</option>
+                    </select>
+                </div>
+                <div class="reg-field">
+                    <label for="reg-sem">📅 SEMESTER</label>
+                    <select id="reg-sem">
+                        <option value="1">Semester 1 (1st Year)</option>
+                        <option value="2">Semester 2 (1st Year)</option>
+                        <option value="3">Semester 3 (2nd Year)</option>
+                        <option value="4" selected>Semester 4 (2nd Year)</option>
+                        <option value="5">Semester 5 (3rd Year)</option>
+                        <option value="6">Semester 6 (3rd Year)</option>
+                        <option value="7">Semester 7 (4th Year)</option>
+                        <option value="8">Semester 8 (4th Year)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="reg-col reg-roster-col">
+                <div id="reg-roster-preview" class="reg-roster-box">
+                    <!-- Filled dynamically by updateRosterPreview() -->
+                </div>
+                <button class="btn-start-mission" id="btn-start-game">
+                    <span>🚀 START BUNK MISSION</span>
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -1074,11 +1114,15 @@ if (regDeptSelect) regDeptSelect.addEventListener("change", updateRosterPreview)
 if (regSemSelect) regSemSelect.addEventListener("change", updateRosterPreview);
 updateRosterPreview();
 
+// Ensure clean empty fields on startup (no autofill)
+if (regNameInput) regNameInput.value = "";
+if (regRollInput) regRollInput.value = "";
+
 function openRegistrationModal() {{
     gameState = "REGISTRATION";
     btnPause.innerText = "▶️";
-    if (regNameInput) regNameInput.value = CONFIG.student_name;
-    if (regRollInput) regRollInput.value = CONFIG.student_roll;
+    if (regNameInput) regNameInput.value = (CONFIG.student_name && CONFIG.student_name !== "Student") ? CONFIG.student_name : "";
+    if (regRollInput) regRollInput.value = (CONFIG.student_roll && CONFIG.student_roll !== "Roll 01") ? CONFIG.student_roll : "";
     if (regDeptSelect) regDeptSelect.value = CONFIG.student_dept;
     if (regSemSelect) regSemSelect.value = CONFIG.student_sem;
     updateRosterPreview();
@@ -1110,6 +1154,17 @@ if (btnStartGame) {{
         if (regModal) regModal.style.display = "none";
         gameState = "PLAYING";
         btnPause.innerText = "⏸️";
+
+        // Attempt mobile fullscreen and landscape orientation lock upon game start
+        try {{
+            if (document.documentElement.requestFullscreen) {{
+                document.documentElement.requestFullscreen().then(() => {{
+                    if (screen.orientation && screen.orientation.lock) {{
+                        screen.orientation.lock("landscape").catch(() => {{}});
+                    }}
+                }}).catch(() => {{}});
+            }}
+        }} catch(err) {{}}
     }};
     btnStartGame.addEventListener("click", startAction);
     btnStartGame.addEventListener("touchend", startAction);
@@ -1117,6 +1172,7 @@ if (btnStartGame) {{
 
 const handleEnter = (e) => {{
     if (e.key === "Enter") {{
+        e.preventDefault();
         if (btnStartGame) btnStartGame.click();
     }}
 }};
